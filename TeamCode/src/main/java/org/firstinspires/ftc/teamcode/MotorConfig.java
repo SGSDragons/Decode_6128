@@ -33,11 +33,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
+
+import static org.firstinspires.ftc.teamcode.DriveTrain.getMotorFromPort;
 
 
 /*
- * This file contains an extremely inefficient way of configuring the drive wheels.
+ * This file contains a way of configuring the drive wheels.
  */
 
 @TeleOp(name="Config: Wheels", group="Config")
@@ -45,133 +46,68 @@ public class MotorConfig extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDriveFront = null;
-    private DcMotor leftDriveBack = null;
-    private DcMotor rightDriveFront = null;
-    private DcMotor rightDriveBack = null;
 
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        leftDriveFront  = hardwareMap.get(DcMotor.class, "drive_a");
-        leftDriveBack  = hardwareMap.get(DcMotor.class, "drive_b");
-        rightDriveFront  = hardwareMap.get(DcMotor.class, "drive_c");
-        rightDriveBack = hardwareMap.get(DcMotor.class, "drive_d");
-
-
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        leftDriveFront.setDirection(DcMotor.Direction.FORWARD);
-        leftDriveBack.setDirection(DcMotor.Direction.REVERSE);
-        rightDriveFront.setDirection(DcMotor.Direction.FORWARD);
-        rightDriveBack.setDirection(DcMotor.Direction.REVERSE);
+        DriveTrain drive = new DriveTrain(hardwareMap);
 
         // Wait for the game to start (driver presses START)
         waitForStart();
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
+        DcMotor lastActiveDrive = null;
         while (opModeIsActive()) {
 
-            // Set other variables
-            int wheelToActivate = 1;
-            double frontLeftPower = 0.0;
-            double backLeftPower = 0.0;
-            double frontRightPower = 0.0;
-            double backRightPower = 0.0;
-            String currentWheel = "drive_a";
+            final DcMotor targetMotor = getMotorToSpin(drive);
 
-            telemetry.addData("Current Wheel", currentWheel);
-            telemetry.addData("Press X to set as leftFront Wheel, Circle for leftBack, Triangle for rightFront, and Square for rightBack", "");
-            if (gamepad1.right_bumper) {
-                if (wheelToActivate == 1) {
-                    frontLeftPower = 1.0;
-                    currentWheel = "drive_a";
-                } else if (wheelToActivate == 2) {
-                    backLeftPower = 1.0;
-                    currentWheel = "drive_b";
-                } else if (wheelToActivate == 3) {
-                    frontRightPower = 1.0;
-                    currentWheel = "drive_c";
-                } else if (wheelToActivate == 4) {
-                    backRightPower = 1.0;
-                    currentWheel = "drive_d";
-                }
+            // If the targetMotor is the same as last time, then don't do anything else.
+            if (targetMotor == lastActiveDrive) {
+                continue;
             }
-            else if (gamepad1.xWasPressed()) {
-                if (wheelToActivate == 1) {
-                    telemetry.addLine();
-                    telemetry.addData("drive_a set as", "leftFront");
-                    wheelToActivate = 2;
-                } else if (wheelToActivate == 2) {
-                    telemetry.addData("drive_b set as", "leftFront");
-                    wheelToActivate = 3;
-                } else if (wheelToActivate == 3) {
-                    telemetry.addData("drive_c set as", "leftFront");
-                    wheelToActivate = 4;
-                } else if (wheelToActivate == 4) {
-                    telemetry.addData("drive_d set as", "leftFront");
-                    requestOpModeStop();
-                }
-            } else if (gamepad1.circleWasPressed()) {
-                if (wheelToActivate == 1) {
-                    telemetry.addLine();
-                    telemetry.addData("drive_a set as", "leftBack");
-                    wheelToActivate = 2;
-                } else if (wheelToActivate == 2) {
-                    telemetry.addData("drive_b set as", "leftBack");
-                    wheelToActivate = 3;
-                } else if (wheelToActivate == 3) {
-                    telemetry.addData("drive_c set as", "leftBack");
-                    wheelToActivate = 4;
-                } else if (wheelToActivate == 4) {
-                    telemetry.addData("drive_d set as", "leftBack");
-                    requestOpModeStop();
-                }
-            } else if (gamepad1.triangleWasPressed()) {
-                if (wheelToActivate == 1) {
-                    telemetry.addLine();
-                    telemetry.addData("drive_a set as", "rightFront");
-                    wheelToActivate = 2;
-                } else if (wheelToActivate == 2) {
-                    telemetry.addData("drive_b set as", "rightFront");
-                    wheelToActivate = 3;
-                } else if (wheelToActivate == 3) {
-                    telemetry.addData("drive_c set as", "rightFront");
-                    wheelToActivate = 4;
-                } else if (wheelToActivate == 4) {
-                    telemetry.addData("drive_d set as", "rightFront");
-                    requestOpModeStop();
-                }
-            } else if (gamepad1.squareWasPressed()) {
-                if (wheelToActivate == 1) {
-                    telemetry.addLine();
-                    telemetry.addData("drive_a set as", "rightBack");
-                    wheelToActivate = 2;
-                } else if (wheelToActivate == 2) {
-                    telemetry.addData("drive_b set as", "rightBack");
-                    wheelToActivate = 3;
-                } else if (wheelToActivate == 3) {
-                    telemetry.addData("drive_c set as", "rightBack");
-                    wheelToActivate = 4;
-                } else if (wheelToActivate == 4) {
-                    telemetry.addData("drive_d set as", "rightBack");
-                    requestOpModeStop();
-                }
+
+            // If the last motor was a real motor, then stop its spinning
+            if (lastActiveDrive != null) {
+                lastActiveDrive.setPower(0.0);
             }
-            // Send calculated power to wheels
-            leftDriveFront.setPower(frontLeftPower);
-            leftDriveBack.setPower(backLeftPower);
-            rightDriveFront.setPower(frontRightPower);
-            rightDriveBack.setPower(backRightPower);
+            // Remember the target motor for next time. It will be the "last" motor on the next loop
+            lastActiveDrive = targetMotor;
+
+            // If the new target motor isn't null, make it spin. Also, print out
+            // the name of the motor so we know what to fix.
+            if (targetMotor != null) {
+                telemetry.addData("Current Wheel", getMotorFromPort(targetMotor.getPortNumber()));
+                targetMotor.setPower(0.3);
+            }
 
             telemetry.update();
         }
+    }
+
+    DcMotor getMotorToSpin(DriveTrain drive) {
+
+        // Pick which wheel to target based on which button is pressed.
+        // The first match wins. Pressing multiple buttons will only match one.
+        if (gamepad1.cross) {
+            return drive.leftDriveBack;
+        }
+
+        if (gamepad1.circle) {
+            return drive.leftDriveFront;
+        }
+
+        if (gamepad1.triangle) {
+            return drive.rightDriveBack;
+        }
+
+        if (gamepad1.square) {
+            return drive.rightDriveFront;
+        }
+
+        // No motor should spin.
+        return null;
     }
 }

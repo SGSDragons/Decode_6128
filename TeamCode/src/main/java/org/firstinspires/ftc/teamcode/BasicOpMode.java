@@ -54,31 +54,13 @@ public class BasicOpMode extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDriveFront = null;
-    private DcMotor leftDriveBack = null;
-    private DcMotor rightDriveFront = null;
-    private DcMotor rightDriveBack = null;
 
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        leftDriveFront  = hardwareMap.get(DcMotor.class, "drive_a");
-        leftDriveBack  = hardwareMap.get(DcMotor.class, "drive_b");
-        rightDriveFront  = hardwareMap.get(DcMotor.class, "drive_c");
-        rightDriveBack = hardwareMap.get(DcMotor.class, "drive_d");
-
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        leftDriveFront.setDirection(DcMotor.Direction.REVERSE);
-        leftDriveBack.setDirection(DcMotor.Direction.REVERSE);
-        rightDriveFront.setDirection(DcMotor.Direction.FORWARD);
-        rightDriveBack.setDirection(DcMotor.Direction.FORWARD);
+        final DriveTrain drive = new DriveTrain(hardwareMap);
 
         // Wait for the game to start (driver presses START)
         waitForStart();
@@ -87,15 +69,6 @@ public class BasicOpMode extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            // Set up a variable for each drive wheel to save power level for telemetry
-            double leftPower;
-            double rightPower;
-            double frontPower;
-            double backPower;
-
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
-
             // POV Mode uses left stick for forward, backward, left, right, and right stick to turn.
 
             // Get input from the gamepad
@@ -103,33 +76,7 @@ public class BasicOpMode extends LinearOpMode {
             double strafe = gamepad1.left_stick_x;    // Left/Right strafe
             double turn = gamepad1.right_stick_x;     // Turn left/right
 
-            // Calculate power for each wheel
-            double frontLeftPower  = forward + strafe - turn;
-            double backLeftPower   = forward - strafe + turn;
-            double frontRightPower = forward - strafe - turn;
-            double backRightPower  = forward + strafe + turn;
-
-            // Normalize the values if any motor power exceeds the range [-1.0, 1.0]
-            double max = Math.max(Math.abs(frontLeftPower), Math.max(Math.abs(backLeftPower),
-                    Math.max(Math.abs(frontRightPower), Math.abs(backRightPower))));
-
-            if (max > 1.0) {
-                frontLeftPower  /= max;
-                backLeftPower   /= max;
-                frontRightPower /= max;
-                backRightPower  /= max;
-            }
-
-            // Send calculated power to wheels
-            leftDriveFront.setPower(frontLeftPower);
-            leftDriveBack.setPower(backLeftPower);
-            rightDriveFront.setPower(frontRightPower);
-            rightDriveBack.setPower(backRightPower);
-
-
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.update();
+            drive.drive(forward, strafe, turn);
         }
     }
 }
