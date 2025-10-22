@@ -15,10 +15,10 @@ public class DriveTrain {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        leftDriveFront  = hardwareMap.get(DcMotor.class, "drive_d");
-        leftDriveBack  = hardwareMap.get(DcMotor.class, "drive_b");
-        rightDriveFront  = hardwareMap.get(DcMotor.class, "drive_c");
-        rightDriveBack = hardwareMap.get(DcMotor.class, "drive_a");
+        leftDriveFront  = hardwareMap.get(DcMotor.class, "drive_a");
+        leftDriveBack   = hardwareMap.get(DcMotor.class, "drive_d");
+        rightDriveFront = hardwareMap.get(DcMotor.class, "drive_b");
+        rightDriveBack  = hardwareMap.get(DcMotor.class, "drive_c");
 
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
