@@ -65,8 +65,8 @@ public class BasicOpMode extends LinearOpMode {
 
             // Get input from the gamepad
             double forward = -gamepad1.left_stick_y;  // Forward is negative Y
-            double strafe = -gamepad1.left_stick_x;    // Left/Right strafe
-            double turn = -gamepad1.right_stick_x;     // Turn left/right
+            double strafe = gamepad1.left_stick_x;    // Left/Right strafe
+            double turn = gamepad1.right_stick_x;     // Turn left/right
 
             drive.drive(forward, strafe, turn);
         }

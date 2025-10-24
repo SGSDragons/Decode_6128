@@ -36,20 +36,18 @@ public class OpMode extends LinearOpMode{
 
             // Get input from the gamepad
             double forward = -gamepad1.left_stick_y;  // Forward is negative Y
-            double strafe = -gamepad1.left_stick_x;   // Left/Right strafe
-            double turn = -gamepad1.right_stick_x;    // Turn left/right
+            double strafe = gamepad1.left_stick_x;   // Left/Right strafe
+            double turn = gamepad1.right_stick_x;    // Turn left/right
 
             drive.drive(forward, strafe, turn);
 
             // Spin shooter wheel if the trigger is being held
             if (gamepad2.right_trigger > 0) {
                 shooterMotor.setPower(1.0);
-            } else {
-                shooterMotor.setPower(0.0);
             }
 
             // Spin belt-collector wheel if the trigger is being held
-            if (gamepad2.left_trigger > 0) {
+            else if (gamepad2.left_trigger > 0) {
                 bCMotor.setPower(1.0);
             }
             // Backwards button for when the artifacts are in the way of the shooter
@@ -57,6 +55,7 @@ public class OpMode extends LinearOpMode{
                 bCMotor.setPower(-0.5);
             } else {
                 bCMotor.setPower(0.0);
+                shooterMotor.setPower(0.0);
             }
         }
     }
