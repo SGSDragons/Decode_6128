@@ -6,28 +6,28 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import java.util.List;
 
 public class DriveTrain {
-    public final DcMotor leftDriveFront;
-    public final DcMotor leftDriveBack;
-    public final DcMotor rightDriveFront;
-    public final DcMotor rightDriveBack;
+    public final DcMotor frontLeftDrive;
+    public final DcMotor frontRightDrive;
+    public final DcMotor backLeftDrive;
+    public final DcMotor backRightDrive;
 
     public DriveTrain(HardwareMap hardwareMap) {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        leftDriveFront  = hardwareMap.get(DcMotor.class, "drive_a");
-        leftDriveBack   = hardwareMap.get(DcMotor.class, "drive_d");
-        rightDriveFront = hardwareMap.get(DcMotor.class, "drive_b");
-        rightDriveBack  = hardwareMap.get(DcMotor.class, "drive_c");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "drive_a");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "drive_b");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "drive_c");
+        backRightDrive = hardwareMap.get(DcMotor.class, "drive_d");
 
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        leftDriveFront.setDirection(DcMotor.Direction.REVERSE);
-        leftDriveBack.setDirection(DcMotor.Direction.REVERSE);
-        rightDriveFront.setDirection(DcMotor.Direction.FORWARD);
-        rightDriveBack.setDirection(DcMotor.Direction.FORWARD);
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
+        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
     }
 
     public void drive(double forward, double strafe, double turn) {
@@ -50,10 +50,10 @@ public class DriveTrain {
         }
 
         // Send calculated power to wheels
-        leftDriveFront.setPower(frontLeftPower);
-        leftDriveBack.setPower(backLeftPower);
-        rightDriveFront.setPower(frontRightPower);
-        rightDriveBack.setPower(backRightPower);
+        frontLeftDrive.setPower(frontLeftPower);
+        frontRightDrive.setPower(backLeftPower);
+        backLeftDrive.setPower(frontRightPower);
+        backRightDrive.setPower(backRightPower);
     }
     public static Object getMotorFromPort(int portNumber) {
         List<String> Motors = List.of("drive_a","drive_b","drive_c","drive_d");

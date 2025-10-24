@@ -92,19 +92,19 @@ public class MotorConfig extends LinearOpMode {
         // Pick which wheel to target based on which button is pressed.
         // The first match wins. Pressing multiple buttons will only match one.
         if (gamepad1.cross) {
-            return drive.leftDriveBack;
+            return drive.frontRightDrive;
         }
 
         if (gamepad1.circle) {
-            return drive.leftDriveFront;
+            return drive.frontLeftDrive;
         }
 
         if (gamepad1.triangle) {
-            return drive.rightDriveBack;
+            return drive.backRightDrive;
         }
 
         if (gamepad1.square) {
-            return drive.rightDriveFront;
+            return drive.backLeftDrive;
         }
 
         // No motor should spin.
