@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import java.util.List;
@@ -24,9 +25,9 @@ public class DriveTrain {
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
+        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
     }
 
@@ -34,8 +35,8 @@ public class DriveTrain {
 
         // Calculate power for each wheel
         double frontLeftPower  = forward + strafe + turn;
-        double backLeftPower   = forward - strafe + turn;
         double frontRightPower = forward - strafe - turn;
+        double backLeftPower   = forward - strafe + turn;
         double backRightPower  = forward + strafe - turn;
 
         // Normalize the values if any motor power exceeds the range [-1.0, 1.0]
@@ -51,9 +52,11 @@ public class DriveTrain {
 
         // Send calculated power to wheels
         frontLeftDrive.setPower(frontLeftPower);
-        frontRightDrive.setPower(backLeftPower);
-        backLeftDrive.setPower(frontRightPower);
+        frontRightDrive.setPower(frontRightPower);
+        backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
+
+
     }
     public static Object getMotorFromPort(int portNumber) {
         List<String> Motors = List.of("drive_a","drive_b","drive_c","drive_d");

@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.BasicOpMode.*;
 
@@ -28,11 +27,9 @@ public class OpMode extends LinearOpMode{
         final DcMotor shooterMotor, bCMotor;
         shooterMotor  = hardwareMap.get(DcMotor.class, "shoot");
         bCMotor       = hardwareMap.get(DcMotor.class, "collect");
-        shooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            double deltaTime = runtime.seconds();
 
             // Get input from the gamepad
             double forward = -gamepad1.left_stick_y;  // Forward is negative Y
@@ -44,10 +41,12 @@ public class OpMode extends LinearOpMode{
             // Spin shooter wheel if the trigger is being held
             if (gamepad2.right_trigger > 0) {
                 shooterMotor.setPower(1.0);
+            } else {
+                shooterMotor.setPower(0.0);
             }
 
             // Spin belt-collector wheel if the trigger is being held
-            else if (gamepad2.left_trigger > 0) {
+            if (gamepad2.left_trigger > 0) {
                 bCMotor.setPower(1.0);
             }
             // Backwards button for when the artifacts are in the way of the shooter
@@ -55,7 +54,6 @@ public class OpMode extends LinearOpMode{
                 bCMotor.setPower(-0.5);
             } else {
                 bCMotor.setPower(0.0);
-                shooterMotor.setPower(0.0);
             }
         }
     }
