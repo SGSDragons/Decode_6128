@@ -34,7 +34,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import static org.firstinspires.ftc.teamcode.DriveTrain.getMotorFromPort;
+import static org.firstinspires.ftc.teamcode.DriveTrain.getDriveFromPort;
 
 
 /*
@@ -79,7 +79,7 @@ public class MotorConfig extends LinearOpMode {
             // If the new target motor isn't null, make it spin. Also, print out
             // the name of the motor so we know what to fix.
             if (targetMotor != null) {
-                telemetry.addData("Current Wheel", getMotorFromPort(targetMotor.getPortNumber()));
+                telemetry.addData("Current Wheel", getDriveFromPort(targetMotor.getPortNumber()));
                 targetMotor.setPower(0.3);
             }
 

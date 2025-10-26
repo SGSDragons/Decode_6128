@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.teamcode.BasicOpMode.*;
 
 @TeleOp(name="6128 DECODE OpMode", group="OpMode")
 public class OpMode extends LinearOpMode{
@@ -24,9 +24,12 @@ public class OpMode extends LinearOpMode{
         runtime.reset();
 
         // Set shooter wheel and belt-collector wheel motors
-        final DcMotor shooterMotor, bCMotor;
-        shooterMotor  = hardwareMap.get(DcMotor.class, "shoot");
-        bCMotor       = hardwareMap.get(DcMotor.class, "collect");
+        final DcMotorEx shooterMotor, bCMotor;
+        shooterMotor  = hardwareMap.get(DcMotorEx.class, "shoot");
+        bCMotor       = hardwareMap.get(DcMotorEx.class, "collect");
+
+        // Set other variables
+        double minShooterVelocity = 1300;
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -50,10 +53,26 @@ public class OpMode extends LinearOpMode{
                 bCMotor.setPower(1.0);
             }
             // Backwards button for when the artifacts are in the way of the shooter
-             else if (gamepad2.left_bumper) {
+            else if (gamepad2.left_bumper) {
                 bCMotor.setPower(-0.5);
-            } else {
+            }
+            // Auto run the belt if it is at max speed
+            else if (shooterMotor.getVelocity() > minShooterVelocity && !gamepad2.circle && gamepad2.right_trigger > 0.0) {
+                gamepad2.rumble(500);
+                bCMotor.setPower(1.0);
+            }
+            else {
                 bCMotor.setPower(0.0);
+                gamepad2.stopRumble();
+            }
+
+            // Communication when needed
+            if (gamepad1.triangle) {
+                gamepad2.rumble(100);
+                gamepad2.setLedColor(55, 255, 55, 200);
+            } if (gamepad2.triangle) {
+                gamepad1.rumble(100);
+                gamepad1.setLedColor(55, 255, 55, 200);
             }
         }
     }
