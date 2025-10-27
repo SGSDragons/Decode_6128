@@ -29,7 +29,8 @@ public class OpMode extends LinearOpMode{
         bCMotor       = hardwareMap.get(DcMotorEx.class, "collect");
 
         // Set other variables
-        double minShooterVelocity = 1300;
+        double shooterVelocity = 1500;
+        double shooterVelocityRange = 100;
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -43,9 +44,11 @@ public class OpMode extends LinearOpMode{
 
             // Spin shooter wheel if the trigger is being held
             if (gamepad2.right_trigger > 0) {
-                shooterMotor.setPower(1.0);
+                shooterMotor.setVelocity(shooterVelocity);
+            } else if (gamepad2.right_bumper) {
+                shooterMotor.setVelocity(-500); // 25% of max velocity (2000)
             } else {
-                shooterMotor.setPower(0.0);
+                shooterMotor.setVelocity(0.0);
             }
 
             // Spin belt-collector wheel if the trigger is being held
@@ -57,12 +60,12 @@ public class OpMode extends LinearOpMode{
                 bCMotor.setPower(-0.5);
             }
             // Auto run the belt if it is at max speed
-            else if (shooterMotor.getVelocity() > minShooterVelocity && !gamepad2.circle && gamepad2.right_trigger > 0.0) {
+            else if (Math.abs(shooterMotor.getVelocity() - shooterVelocity) < shooterVelocityRange && !gamepad2.circle && !gamepad2.b && gamepad2.right_trigger > 0.0) {
                 gamepad2.rumble(500);
                 bCMotor.setPower(1.0);
             }
             else {
-                bCMotor.setPower(0.0);
+                    bCMotor.setPower(0.0);
                 gamepad2.stopRumble();
             }
 

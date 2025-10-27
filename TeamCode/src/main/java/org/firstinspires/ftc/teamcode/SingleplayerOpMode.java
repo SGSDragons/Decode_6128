@@ -56,7 +56,7 @@ public class SingleplayerOpMode extends LinearOpMode{
                 bCMotor.setPower(-0.5);
             }
             // Auto run the belt if it is at max speed
-            else if (shooterMotor.getVelocity() > minShooterVelocity && !gamepad1.circle && gamepad1.right_trigger > 0.0) {
+            else if (shooterMotor.getVelocity() > minShooterVelocity && !gamepad1.circle && !gamepad1.b && gamepad1.right_trigger > 0.0) {
                 gamepad1.rumble(500);
                 bCMotor.setPower(1.0);
             }
