@@ -8,9 +8,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.systems.PhysicalDriver;
 import org.firstinspires.ftc.teamcode.systems.PhysicalOperator;
 
-@TeleOp(name="Singleplayer OpMode", group="OpMode")
+@TeleOp(name="6128 DECODE OpMode", group="OpMode")
 @Config
-public class SingleplayerOpMode extends LinearOpMode {
+public class MainOpMode extends LinearOpMode{
+
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override
@@ -19,7 +20,7 @@ public class SingleplayerOpMode extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        final PhysicalDriver drive = new PhysicalDriver(hardwareMap);
+        final PhysicalDriver driver = new PhysicalDriver(hardwareMap);
         final PhysicalOperator operator = new PhysicalOperator(hardwareMap);
 
         // Wait for the game to start (driver presses START)
@@ -31,8 +32,8 @@ public class SingleplayerOpMode extends LinearOpMode {
             telemetry.addData("Status", "Initialized");
             telemetry.update();
 
-            drive.Drive(gamepad1, gamepad1);
-            operator.Operate(gamepad1, gamepad1);
+            driver.Drive(gamepad1, gamepad2);
+            operator.Operate(gamepad1, gamepad2);
         }
     }
 }

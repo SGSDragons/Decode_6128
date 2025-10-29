@@ -26,6 +26,12 @@ android {
     }
 }
 
+repositories {
+    maven { url = 'https://maven.brott.dev/' }
+}
 dependencies {
+    implementation('com.acmerobotics.dashboard:dashboard:0.5.0') {
+        exclude group: 'org.firstinspires.ftc'
+    }
     implementation project(':FtcRobotController')
 }

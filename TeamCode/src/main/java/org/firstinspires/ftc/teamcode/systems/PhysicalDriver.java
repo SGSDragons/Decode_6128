@@ -1,17 +1,18 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import java.util.List;
 
-public class DriveTrain {
+public class PhysicalDriver {
     public final DcMotor frontLeftDrive;
     public final DcMotor frontRightDrive;
     public final DcMotor backLeftDrive;
     public final DcMotor backRightDrive;
 
-    public DriveTrain(HardwareMap hardwareMap) {
+    public PhysicalDriver(HardwareMap hardwareMap) {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
@@ -30,7 +31,12 @@ public class DriveTrain {
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
     }
 
-    public void drive(double forward, double strafe, double turn) {
+    public void Drive(Gamepad gamepad1, Gamepad gamepad2) {
+
+        // Get input from the gamepad
+        double forward = -gamepad1.left_stick_y;  // Forward is negative Y
+        double strafe = gamepad1.left_stick_x;   // Left/Right strafe
+        double turn = gamepad1.right_stick_x;    // Turn left/right
 
         // Calculate power for each wheel
         double frontLeftPower  = forward + strafe + turn;
