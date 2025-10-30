@@ -34,9 +34,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import static org.firstinspires.ftc.teamcode.systems.PhysicalDriver.getDriveFromPort;
+import static org.firstinspires.ftc.teamcode.systems.Driver.getDriveFromPort;
 
-import org.firstinspires.ftc.teamcode.systems.PhysicalDriver;
+import org.firstinspires.ftc.teamcode.systems.Driver;
 
 
 /*
@@ -46,7 +46,7 @@ import org.firstinspires.ftc.teamcode.systems.PhysicalDriver;
 @TeleOp(name="Config: Wheels", group="Config")
 public class MotorConfig extends LinearOpMode {
 
-    // Declare MainOpMode members.
+    // Declare MainTeleOp members.
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override
@@ -54,7 +54,7 @@ public class MotorConfig extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        PhysicalDriver drive = new PhysicalDriver(hardwareMap);
+        Driver drive = new Driver(hardwareMap);
 
         // Wait for the game to start (driver presses START)
         waitForStart();
@@ -89,7 +89,7 @@ public class MotorConfig extends LinearOpMode {
         }
     }
 
-    DcMotor getMotorToSpin(PhysicalDriver drive) {
+    DcMotor getMotorToSpin(Driver drive) {
 
         // Pick which wheel to target based on which button is pressed.
         // The first match wins. Pressing multiple buttons will only match one.

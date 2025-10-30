@@ -5,12 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.systems.PhysicalDriver;
-import org.firstinspires.ftc.teamcode.systems.PhysicalOperator;
+import org.firstinspires.ftc.teamcode.systems.Driver;
+import org.firstinspires.ftc.teamcode.systems.Operator;
 
-@TeleOp(name="6128 DECODE OpMode", group="OpMode")
+@TeleOp(name="6128 DECODE TeleOp", group="OpMode")
 @Config
-public class MainOpMode extends LinearOpMode{
+public class MainTeleOp extends LinearOpMode{
 
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -20,17 +20,18 @@ public class MainOpMode extends LinearOpMode{
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        final PhysicalDriver driver = new PhysicalDriver(hardwareMap);
-        final PhysicalOperator operator = new PhysicalOperator(hardwareMap);
+        final Driver driver = new Driver(hardwareMap);
+        final Operator operator = new Operator(hardwareMap);
 
         // Wait for the game to start (driver presses START)
         waitForStart();
         runtime.reset();
 
+        telemetry.addData("Status", "Running");
+        telemetry.update();
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            telemetry.addData("Status", "Initialized");
-            telemetry.update();
 
             driver.Drive(gamepad1, gamepad2);
             operator.Operate(gamepad1, gamepad2);

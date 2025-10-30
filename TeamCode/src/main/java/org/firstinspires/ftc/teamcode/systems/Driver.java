@@ -6,13 +6,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import java.util.List;
 
-public class PhysicalDriver {
+public class Driver {
     public final DcMotor frontLeftDrive;
     public final DcMotor frontRightDrive;
     public final DcMotor backLeftDrive;
     public final DcMotor backRightDrive;
 
-    public PhysicalDriver(HardwareMap hardwareMap) {
+    public Driver(HardwareMap hardwareMap) {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
