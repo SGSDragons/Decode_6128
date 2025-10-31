@@ -39,7 +39,7 @@ public class Driver {
 
         // Get input from the gamepad
         double forward = -gamepad1.left_stick_y;  // Forward is negative Y
-        double strafe = gamepad1.left_stick_x;   // Left/Right strafe
+        double strafe = /*gamepad1.left_stick_x*/ 0.0;  //  Left/Right strafe  >>> TEMPORARILY DISABLED <<<
         double turn = gamepad1.right_stick_x;    // Turn left/right
 
         // Calculate power for each wheel

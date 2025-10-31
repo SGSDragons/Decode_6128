@@ -1,16 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.systems.Driver;
-import org.firstinspires.ftc.teamcode.systems.OperationSubsystem;
 import org.firstinspires.ftc.teamcode.systems.Operator;
 
-@TeleOp(name="Singleplayer OpMode", group="OpMode")
-public class SingleplayerOpMode extends LinearOpMode {
+@TeleOp(name="Singleplayer TeleOp", group="OpMode")
+public class SingleplayerTeleOp extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override

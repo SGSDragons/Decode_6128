@@ -43,10 +43,13 @@ public class Operator {
         if (gamepad2.left_trigger > 0) {
             bCMotor.setPower(1.0);
         }
-        // Auto run the belt if it is at max speed
+        // Auto run the belt if it is at max speed  >>> TEMPORARILY DISABLED <<<
+        /*
         else if (Math.abs(shooterTargetVelocity - shooterMotor.getVelocity()) < autoFeedRange && !gamepad2.circle && !gamepad2.b && gamepad2.right_trigger > 0.0) {
             bCMotor.setPower(1.0);
-        } else if (!gamepad2.square || !gamepad2.x) {
+        }
+        */
+        else if (!gamepad2.square || !gamepad2.x) {
             bCMotor.setPower(0.0);
         }
 
