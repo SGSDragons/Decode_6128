@@ -10,7 +10,6 @@ import org.firstinspires.ftc.teamcode.systems.OperationSubsystem;
 import org.firstinspires.ftc.teamcode.systems.Operator;
 
 @TeleOp(name="Singleplayer OpMode", group="OpMode")
-@Config
 public class SingleplayerOpMode extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -34,7 +33,7 @@ public class SingleplayerOpMode extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            drive.Drive(gamepad1, gamepad1);
+            drive.Drive(gamepad1);
             operator.Operate(gamepad1, gamepad1);
         }
     }

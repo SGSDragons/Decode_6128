@@ -1,20 +1,19 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+@Config
 public class OperationSubsystem {
     public final DcMotorEx shooterMotor;
     public final DcMotorEx bCMotor;
-    public  double shooterTargetPower;
-    public  double shooterVelocityMinRange;
+    public static double shooterTargetPower;
+    public static double shooterVelocityMinRange;
     public boolean runShooter;
     public boolean runBC;
     public boolean emptyBarrel;
     public boolean forceStopAutoFeed;
-    public int artifactShotsDone;
-    public double previousShooterVelocity;
-    public boolean getPreviousShooterVelocity;
 
     public OperationSubsystem(HardwareMap hardwareMap) {
         // Set shooter wheel and belt-collector wheel motors
@@ -28,9 +27,6 @@ public class OperationSubsystem {
         emptyBarrel = false;
         runBC = false;
         runShooter = false;
-        artifactShotsDone = 0;
-        previousShooterVelocity = 0.0;
-        getPreviousShooterVelocity = true;
     }
 
     public void Update() {
@@ -56,18 +52,6 @@ public class OperationSubsystem {
             bCMotor.setPower(1.0);
         } else if (!forceStopAutoFeed) {
             bCMotor.setPower(0.0);
-        }
-
-        if (getPreviousShooterVelocity) {
-            previousShooterVelocity = shooterMotor.getVelocity();
-            getPreviousShooterVelocity = false;
-        }
-        else {
-            getPreviousShooterVelocity = true;
-        }
-
-        if (shooterMotor.getVelocity() + 500 < previousShooterVelocity) {
-            artifactShotsDone += 1;
         }
     }
 }

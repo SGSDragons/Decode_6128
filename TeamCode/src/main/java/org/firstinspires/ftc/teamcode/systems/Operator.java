@@ -1,17 +1,19 @@
 package org.firstinspires.ftc.teamcode.systems;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+@Config
 public class Operator {
 
-    final DcMotorEx shooterMotor;
-    final DcMotorEx bCMotor;
-    double shooterTargetVelocity;
-    final double shooterVelocityMinRange;
+    private final DcMotorEx shooterMotor;
+    private final DcMotorEx bCMotor;
+    public static double shooterTargetVelocity = 1400;
+    public static double autoFeedRange = 100;
 
     public Operator(HardwareMap hardwareMap) {
         // Set shooter wheel and belt-collector wheel motors
@@ -20,7 +22,7 @@ public class Operator {
 
         // Set important constants & variables
         shooterTargetVelocity = 1400;
-        shooterVelocityMinRange = 100;
+        autoFeedRange = 100;
     }
 
     public void Operate(Gamepad gamepad1, Gamepad gamepad2) {
@@ -42,14 +44,10 @@ public class Operator {
             bCMotor.setPower(1.0);
         }
         // Auto run the belt if it is at max speed
-        else if (shooterMotor.getVelocity() - shooterTargetVelocity > shooterVelocityMinRange && !gamepad2.circle && !gamepad2.b && gamepad2.right_trigger > 0.0) {
-            gamepad2.rumble(500);
+        else if (Math.abs(shooterTargetVelocity - shooterMotor.getVelocity()) < autoFeedRange && !gamepad2.circle && !gamepad2.b && gamepad2.right_trigger > 0.0) {
             bCMotor.setPower(1.0);
         } else if (!gamepad2.square || !gamepad2.x) {
             bCMotor.setPower(0.0);
-            gamepad2.stopRumble();
-        } else {
-            gamepad2.stopRumble();
         }
 
         // Communication when needed
@@ -61,11 +59,5 @@ public class Operator {
             gamepad1.rumble(100);
             gamepad1.setLedColor(55, 255, 55, 200);
         }
-
-        // Plot numbers
-        TelemetryPacket p = new TelemetryPacket();
-        p.put("Shooter Speed", shooterMotor.getVelocity());
-        p.put("Minimum Shooter Speed", shooterTargetVelocity - shooterVelocityMinRange);
-        FtcDashboard.getInstance().sendTelemetryPacket(p);
     }
 }

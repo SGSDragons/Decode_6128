@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
 import org.firstinspires.ftc.teamcode.systems.DriveTrain;
 import org.firstinspires.ftc.teamcode.systems.OperationSubsystem;
 
@@ -12,51 +12,60 @@ import org.firstinspires.ftc.teamcode.systems.OperationSubsystem;
 public class Autonomous extends LinearOpMode{
 
     private ElapsedTime runtime = new ElapsedTime();
+    public static boolean doBackup = true;
+    public static boolean doShoot = true;
 
     @Override
     public void runOpMode() {
-
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        final DriveTrain dS = new DriveTrain(hardwareMap);
-        final OperationSubsystem oS = new OperationSubsystem(hardwareMap);
-
-        double deltaTime = 0.0;
-        double timeThreeArtsShot = -1;
+        final DriveTrain drive = new DriveTrain(hardwareMap);
+        final OperationSubsystem operate = new OperationSubsystem(hardwareMap);
 
         // Wait for the game to start (driver presses START)
         waitForStart();
-        runtime.reset();
-
         telemetry.addData("Status", "Running");
         telemetry.update();
 
-        oS.shooterTargetPower = 0.9;
+        // Run backwards at full power for 1.5 seconds
+        if (doBackup) {
+            telemetry.addData("Status", "Backing up");
+            telemetry.update();
 
-        // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
-            deltaTime = runtime.milliseconds();
+            runtime.reset();
 
-            if (deltaTime >= 1000 && deltaTime < 1750) {
-                dS.forward = -1.0;
-            } else if (deltaTime >= 1750 && deltaTime < 2000) {
-                dS.forward = 0;
-            } else if (deltaTime >= 2000 && oS.artifactShotsDone < 3) {
-                oS.runShooter = true;
-            } else if (oS.artifactShotsDone >= 3 && timeThreeArtsShot < 0) {
-                oS.runShooter = false;
-                dS.forward = -1.0;
-                timeThreeArtsShot = deltaTime;
-            } else if (timeThreeArtsShot > 0 && deltaTime >= timeThreeArtsShot + 1000) {
-                dS.forward = 0;
+            for (DcMotor wheelMotor : drive.allMotors) {
+                wheelMotor.setTargetPosition(wheelMotor.getCurrentPosition() - 140);
+                drive.frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                wheelMotor.setPower(-0.4);
+            }
+            while (opModeIsActive() && drive.frontLeftDrive.isBusy() && runtime.milliseconds() < 1500) {}
+
+            for (DcMotor motor : drive.allMotors) {
+                motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motor.setPower(0.0);
             }
 
-            dS.Update();
-            oS.Update();
-
-            telemetry.addData("Shots Done", oS.artifactShotsDone);
-            telemetry.update();
         }
+
+        // Shoot 3 artifacts
+        if (doShoot) {
+            telemetry.addData("Status", "Shooting");
+            telemetry.update();
+
+            runtime.reset();
+            while (opModeIsActive() && runtime.milliseconds() < 15000) {
+                operate.runShooter = true;
+                operate.Update();
+            }
+            operate.runShooter = false;
+            operate.Update();
+        }
+
+        // End
+        telemetry.addData("Status", "Stalling");
+        telemetry.update();
+        while (opModeIsActive()) {}
     }
 }

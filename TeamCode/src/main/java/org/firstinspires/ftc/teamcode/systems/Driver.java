@@ -1,11 +1,15 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import java.util.List;
 
+@Config
 public class Driver {
     public final DcMotor frontLeftDrive;
     public final DcMotor frontRightDrive;
@@ -31,7 +35,7 @@ public class Driver {
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
     }
 
-    public void Drive(Gamepad gamepad1, Gamepad gamepad2) {
+    public void Drive(Gamepad gamepad1) {
 
         // Get input from the gamepad
         double forward = -gamepad1.left_stick_y;  // Forward is negative Y
@@ -61,7 +65,13 @@ public class Driver {
         backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
 
-
+        // Plot numbers
+        TelemetryPacket p = new TelemetryPacket();
+        p.put("Front Left Wheel Position", frontLeftDrive.getCurrentPosition());
+        p.put("Front Right Wheel Position", frontRightDrive.getCurrentPosition());
+        p.put("Back Left Wheel Position", backLeftDrive.getCurrentPosition());
+        p.put("Back Right Wheel Position", backRightDrive.getCurrentPosition());
+        FtcDashboard.getInstance().sendTelemetryPacket(p);
     }
     public static Object getDriveFromPort(int portNumber) {
         List<String> Motors = List.of("drive_a","drive_b","drive_c","drive_d");

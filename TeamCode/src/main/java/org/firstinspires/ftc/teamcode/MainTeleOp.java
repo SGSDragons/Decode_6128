@@ -9,7 +9,6 @@ import org.firstinspires.ftc.teamcode.systems.Driver;
 import org.firstinspires.ftc.teamcode.systems.Operator;
 
 @TeleOp(name="6128 DECODE TeleOp", group="OpMode")
-@Config
 public class MainTeleOp extends LinearOpMode{
 
     private ElapsedTime runtime = new ElapsedTime();
@@ -33,7 +32,7 @@ public class MainTeleOp extends LinearOpMode{
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            driver.Drive(gamepad1, gamepad2);
+            driver.Drive(gamepad1);
             operator.Operate(gamepad1, gamepad2);
         }
     }

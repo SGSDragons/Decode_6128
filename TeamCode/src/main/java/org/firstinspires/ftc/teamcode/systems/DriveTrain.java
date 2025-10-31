@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import java.util.List;
 
+@Config
 public class DriveTrain {
     public final DcMotor frontLeftDrive;
     public final DcMotor frontRightDrive;
@@ -14,6 +16,8 @@ public class DriveTrain {
     public double forward;
     public double strafe;
     public double turn;
+
+    public List<DcMotor> allMotors;
 
     public DriveTrain(HardwareMap hardwareMap) {
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -24,6 +28,7 @@ public class DriveTrain {
         backLeftDrive = hardwareMap.get(DcMotor.class, "drive_c");
         backRightDrive = hardwareMap.get(DcMotor.class, "drive_d");
 
+        allMotors = List.of(frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -32,7 +37,6 @@ public class DriveTrain {
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
-
 
         forward = 0.0;
         strafe = 0.0;
