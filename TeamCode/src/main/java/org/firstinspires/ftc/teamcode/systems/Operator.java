@@ -26,7 +26,7 @@ public class Operator {
     public void Operate(Gamepad driverGamepad, Gamepad operatorGamepad) {
         // Backwards button for when the artifacts are in the way of the shooter
         if (operatorGamepad.square || operatorGamepad.x) {
-            shooterMotor.setVelocity(-500); // -25% of the max velocity (2000)
+            shooterMotor.setVelocity(-1000); // -50% of the max velocity (2000)
             bCMotor.setPower(-0.5); // -50% of the max power (1.0)
         }
 
@@ -53,11 +53,11 @@ public class Operator {
 
         // Changeable shooter speed
         if (operatorGamepad.dpad_up) {
-            shooterTargetVelocity = 1400;
+            shooterTargetVelocity = 1500;
         } else if (operatorGamepad.dpad_left || operatorGamepad.dpad_right) {
-            shooterTargetVelocity = 1300;
+            shooterTargetVelocity = 1400;
         } else if (operatorGamepad.dpad_down) {
-            shooterTargetVelocity = 1200;
+            shooterTargetVelocity = 1300;
         }
 
 
