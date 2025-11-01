@@ -35,12 +35,12 @@ public class Driver {
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
     }
 
-    public void Drive(Gamepad gamepad1) {
+    public void Drive(Gamepad driverGamepad) {
 
         // Get input from the gamepad
-        double forward = -gamepad1.left_stick_y;  // Forward is negative Y
-        double strafe = /*gamepad1.left_stick_x*/ 0.0;  //  Left/Right strafe  >>> TEMPORARILY DISABLED <<<
-        double turn = gamepad1.right_stick_x;    // Turn left/right
+        double forward = -driverGamepad.left_stick_y;  // Forward is negative Y
+        double strafe = /*driverGamepad.left_stick_x*/ 0.0;  //  Left/Right strafe  >>> TEMPORARILY DISABLED <<<
+        double turn = driverGamepad.right_stick_x;    // Turn left/right
 
         // Calculate power for each wheel
         double frontLeftPower  = forward + strafe + turn;
@@ -64,14 +64,6 @@ public class Driver {
         frontRightDrive.setPower(frontRightPower);
         backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
-
-        // Plot numbers
-        TelemetryPacket p = new TelemetryPacket();
-        p.put("Front Left Wheel Position", frontLeftDrive.getCurrentPosition());
-        p.put("Front Right Wheel Position", frontRightDrive.getCurrentPosition());
-        p.put("Back Left Wheel Position", backLeftDrive.getCurrentPosition());
-        p.put("Back Right Wheel Position", backRightDrive.getCurrentPosition());
-        FtcDashboard.getInstance().sendTelemetryPacket(p);
     }
     public static Object getDriveFromPort(int portNumber) {
         List<String> Motors = List.of("drive_a","drive_b","drive_c","drive_d");
