@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.systems.DriveTrain;
-import org.firstinspires.ftc.teamcode.systems.OperationSubsystem;
+import org.firstinspires.ftc.teamcode.systems.Operator;
 
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="6128 DECODE Autonomous", group="OpMode")
 @Config
@@ -21,7 +21,7 @@ public class Autonomous extends LinearOpMode{
         telemetry.update();
 
         final DriveTrain drive = new DriveTrain(hardwareMap);
-        final OperationSubsystem operate = new OperationSubsystem(hardwareMap);
+        final Operator operator = new Operator(hardwareMap);
 
         // Wait for the game to start (driver presses START)
         waitForStart();
@@ -56,11 +56,8 @@ public class Autonomous extends LinearOpMode{
 
             runtime.reset();
             while (opModeIsActive() && runtime.milliseconds() < 15000) {
-                operate.runShooter = true;
-                operate.Update();
+                operator.runShooter();
             }
-            operate.runShooter = false;
-            operate.Update();
         }
 
         // End
