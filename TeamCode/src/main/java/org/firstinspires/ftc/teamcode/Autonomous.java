@@ -29,35 +29,25 @@ public class Autonomous extends LinearOpMode{
         telemetry.update();
 
         // Run backwards at full power for 1.5 seconds
-        if (doBackup) {
-            telemetry.addData("Status", "Backing up");
-            telemetry.update();
 
-            runtime.reset();
+        runtime.reset();
 
-            for (DcMotor wheelMotor : drive.allMotors) {
-                wheelMotor.setTargetPosition(wheelMotor.getCurrentPosition() - 140);
-                drive.frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                wheelMotor.setPower(-0.4);
-            }
-            while (opModeIsActive() && drive.frontLeftDrive.isBusy() && runtime.milliseconds() < 1500) {}
+        for (DcMotor wheelMotor : drive.allMotors) {
+            wheelMotor.setTargetPosition(wheelMotor.getCurrentPosition() - 140);
+            drive.frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            wheelMotor.setPower(-0.4);
+        }
+        while (opModeIsActive() && drive.frontLeftDrive.isBusy() && runtime.milliseconds() < 1500) {}
 
-            for (DcMotor motor : drive.allMotors) {
-                motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                motor.setPower(0.0);
-            }
-
+        for (DcMotor motor : drive.allMotors) {
+            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            motor.setPower(0.0);
         }
 
         // Shoot 3 artifacts
-        if (doShoot) {
-            telemetry.addData("Status", "Shooting");
-            telemetry.update();
-
-            runtime.reset();
-            while (opModeIsActive() && runtime.milliseconds() < 15000) {
-                operator.runShooter();
-            }
+        runtime.reset();
+        while (opModeIsActive() && runtime.milliseconds() < 15000) {
+            operator.activateShooter();
         }
 
         // End

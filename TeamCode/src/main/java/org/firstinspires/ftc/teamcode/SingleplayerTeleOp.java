@@ -18,8 +18,8 @@ public class SingleplayerTeleOp extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        final Driver drive = new Driver(hardwareMap);
-        final Operator operator = new Operator(hardwareMap);
+        final Driver drive = new Driver(hardwareMap, gamepad1);
+        final Operator operator = new Operator(hardwareMap, gamepad1, gamepad2);
 
         // Wait for the game to start (driver presses START)
         waitForStart();
@@ -31,8 +31,8 @@ public class SingleplayerTeleOp extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            drive.Drive(gamepad1);
-            operator.Operate(gamepad1, gamepad1);
+            drive.Drive();
+            operator.Operate();
         }
     }
 }

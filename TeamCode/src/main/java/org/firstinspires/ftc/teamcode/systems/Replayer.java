@@ -5,10 +5,9 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,21 +19,21 @@ public class Replayer {
     private final Gamepad gamepad1;
 
     public Replayer(Gamepad gamepad, Driver driver, Operator operator, LinearOpMode linearOpMode) {
-        gamepad1 = gamepad;
-        replayedDriver = driver;
-        replayedOperator = operator;
-        OpMode = linearOpMode;
+        this.gamepad1 = gamepad;
+        this.replayedDriver = driver;
+        this.replayedOperator = operator;
+        this.OpMode = linearOpMode;
     }
 
     public void ReplayRecording(long id) {
-        Path recordingsPath = Paths.get("recordings/");
-        Path filePath = recordingsPath.resolve(id + ".dat");
+        // Use the same internal app storage directory as Recorder
+        File recordingsDir = new File(OpMode.hardwareMap.appContext.getFilesDir(), "recordings");
+        File file = new File(recordingsDir, id + ".dat");
+
         List<byte[]> gamepadStates = new ArrayList<>();
 
         // --- Load recording using binary-safe reading ---
-        try (DataInputStream in = new DataInputStream(
-                new BufferedInputStream(
-                        Files.newInputStream(filePath.toFile().toPath())))) {
+        try (DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
 
             while (in.available() > 0) {
                 int len = in.readInt();
@@ -56,10 +55,10 @@ public class Replayer {
         for (byte[] gamepadState : gamepadStates) {
             gamepad1.fromByteArray(gamepadState);
 
-            replayedDriver.Drive(gamepad1);
-            replayedOperator.Operate(gamepad1, gamepad1);
+            replayedDriver.Drive();
+            replayedOperator.Operate();
 
-            OpMode.sleep(100); // match original timing roughly
+            OpMode.sleep(100); // rough timing match
         }
 
         OpMode.telemetry.addData("Replay", "Done");

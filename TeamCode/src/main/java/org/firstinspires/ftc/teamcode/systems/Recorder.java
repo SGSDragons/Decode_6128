@@ -1,17 +1,14 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 @Autonomous(name="Record Singleplayer TeleOp", group="OpMode")
 public class Recorder extends LinearOpMode {
@@ -19,27 +16,34 @@ public class Recorder extends LinearOpMode {
     @Override
     public void runOpMode() {
         ElapsedTime runtime = new ElapsedTime();
-        Path recordingsPath = Paths.get("recordings/");
-        long recordingsDone;
-        Path filePath;
+        long recordingsDone = 0;
         DataOutputStream out = null;
         boolean fileReady = false;
         boolean writeError = false;
 
-        // --- Count existing recordings to pick next file name ---
-        try (Stream<Path> files = Files.list(recordingsPath)) {
-            recordingsDone = files.count();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to list recordings directory", e);
+        // Use java.io.File for better Android compatibility
+        File recordingsDir = new File(hardwareMap.appContext.getFilesDir(), "recordings");
+
+        if (!recordingsDir.exists()) {
+            if (!recordingsDir.mkdirs()) {
+                telemetry.addData("Error", "Could not create recordings directory");
+                telemetry.update();
+            }
         }
 
-        filePath = recordingsPath.resolve(recordingsDone + ".dat");
+        // Count existing recordings
+        File[] existingFiles = recordingsDir.listFiles();
+        if (existingFiles != null) {
+            recordingsDone = existingFiles.length;
+        }
+
+        File outputFile = new File(recordingsDir, recordingsDone + ".dat");
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        final Driver driver = new Driver(hardwareMap);
-        final Operator operator = new Operator(hardwareMap);
+        final Driver driver = new Driver(hardwareMap, gamepad1);
+        final Operator operator = new Operator(hardwareMap, gamepad1, gamepad1);
 
         // Wait for the game to start
         waitForStart();
@@ -48,23 +52,22 @@ public class Recorder extends LinearOpMode {
         telemetry.addData("Status", "Recording...");
         telemetry.update();
 
-        // --- Try opening file for buffered binary writing ---
+        // Try opening file for buffered binary writing
         try {
             out = new DataOutputStream(
                     new BufferedOutputStream(
-                            Files.newOutputStream(filePath)));
+                            new FileOutputStream(outputFile)));
             fileReady = true;
         } catch (IOException e) {
             telemetry.addData("Error", "Could not open file: %s", e.getMessage());
             telemetry.update();
         }
 
-        // --- Passive recording loop ---
+        // Passive recording loop
         while (opModeIsActive()) {
-            // Capture current gamepad state (assuming your Gamepad class has toByteArray)
+            // Capture current gamepad state (assuming Gamepad class has toByteArray)
             byte[] data = gamepad1.toByteArray();
 
-            // If data is available and file is ready, try to write
             if (data != null && fileReady && !writeError) {
                 try {
                     out.writeInt(data.length);
@@ -77,14 +80,13 @@ public class Recorder extends LinearOpMode {
             }
 
             // Update robot behavior while recording
-            driver.Drive(gamepad1);
-            operator.Operate(gamepad1, gamepad1);
+            driver.Drive();
+            operator.Operate();
 
-            // Passive delay (FTC-safe)
-            sleep(100);
+            sleep(100); // FTC-safe delay
         }
 
-        // --- Clean up after stop ---
+        // Clean up after stop
         if (fileReady) {
             try {
                 out.close();

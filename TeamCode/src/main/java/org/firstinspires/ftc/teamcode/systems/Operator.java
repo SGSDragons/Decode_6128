@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -18,9 +16,31 @@ public class Operator {
     public final DcMotorEx beltMotor;
     public final DcMotorEx collectorMotor;
     public final Servo stopper;
+    private static boolean shootingDisabledToggle;
     private static double shooterTargetVelocity;
     private static double autoFeedRange;
+    private static Gamepad operatorGamepad, driverGamepad;
 
+    // Default
+    public Operator(HardwareMap hardwareMap, Gamepad driveGamepad, Gamepad operateGamepad) {
+        // Set motors and Servos
+        shooterMotor = hardwareMap.get(DcMotorEx.class, "shoot");
+        beltMotor = hardwareMap.get(DcMotorEx.class, "belt");
+        collectorMotor = hardwareMap.get(DcMotorEx.class, "collect");
+        stopper = hardwareMap.get(Servo.class, "stopper");
+
+        beltMotor.setDirection(Direction.REVERSE);
+
+        // Set important constants & variables
+        shooterTargetVelocity = 1400;
+        autoFeedRange = 100;
+        shootingDisabledToggle = true;
+
+        operatorGamepad = operateGamepad;
+        driverGamepad = driveGamepad;
+
+        stopperPosition("closed");
+    }
     public Operator(HardwareMap hardwareMap) {
         // Set motors and Servos
         shooterMotor = hardwareMap.get(DcMotorEx.class, "shoot");
@@ -30,74 +50,86 @@ public class Operator {
 
         beltMotor.setDirection(Direction.REVERSE);
 
-
         // Set important constants & variables
         shooterTargetVelocity = 1400;
         autoFeedRange = 100;
+        shootingDisabledToggle = true;
+
+        stopperPosition("closed");
     }
 
-    public void Operate(Gamepad driverGamepad, Gamepad operatorGamepad) {
+    public void Operate() {
 
-        // Spin shooter wheel if the trigger is being held
-        if (operatorGamepad.right_trigger > 0) {
+        // Always run shooter as long as the toggle is on
+        if (!shootingDisabledToggle && !operatorGamepad.left_bumper) {
             runShooter();
         }
-        // Backwards button for when the artifacts are in the way of the shooter
-        else if (packing(operatorGamepad)) {
-            pack();
-        } else {
+        // Otherwise spin shooter wheel when the trigger is being held
+        else if (operatorGamepad.right_trigger > 0 && !operatorGamepad.left_bumper) {
+            runShooter();
+        } else if (!operatorGamepad.left_bumper) {
             stop(shooterMotor);
         }
 
         // Run the belt & collector if the trigger is being held
-        if (operatorGamepad.left_trigger > 0 && !packing(operatorGamepad)) {
+        if (operatorGamepad.left_trigger > 0 && !operatorGamepad.left_bumper) {
             runIntake();
         }
         // Auto run the belt if it is at max speed
-        else if (canAutoFeed(operatorGamepad)) {
+        else if (canAutoFeed()) {
             autoFeed();
         }
-        else if (!packing(operatorGamepad)) {
+        else if (!operatorGamepad.left_bumper) {
             stop(beltMotor, collectorMotor);
         }
 
-        if (operatorGamepad.dpad_down) {
-            stopperPosition("open");
-        } else if (operatorGamepad.dpad_up) {
-            stopperPosition("closed");
+        // Togglable constant shooting
+        if (operatorGamepad.bWasPressed()) {
+            shootingDisabledToggle = !shootingDisabledToggle;
+        }
+
+        // Empty Barrel Button
+        if (operatorGamepad.left_bumper) {
+            emptyBarrel();
         }
     }
 
-    public void pack() {
-        shooterMotor.setVelocity(-1000); // -50% of the max velocity (2000)
+    public void emptyBarrel() {
         beltMotor.setPower(-1.0);
-        collectorMotor.setPower(0.2); // Power is positive to stop the artifacts from rolling out the back
+        collectorMotor.setPower(-1.0);
+        shooterMotor.setPower(-1.0);
     }
-    public boolean packing(Gamepad operatorGamepad) {
-        return operatorGamepad.square && operatorGamepad.x;
+    public void activateShooter() {
+        shootingDisabledToggle = true;
     }
-    public void runShooter() {
+    private void runShooter() {
         shooterMotor.setVelocity(shooterTargetVelocity);
+        if (!(operatorGamepad == null)) {
+            if (!(operatorGamepad.left_trigger > 0.0)) {
+                stopperPosition("open");
+            }
+        }
     }
     public void runIntake() {
         beltMotor.setPower(1.0);
         collectorMotor.setPower(0.8);
+        stopperPosition("closed");
     }
     public void autoFeed() {
         beltMotor.setPower(1.0);
         collectorMotor.setPower(0.6);
     }
-    public boolean canAutoFeed(Gamepad operatorGamepad) {
+    public boolean canAutoFeed() {
         return Math.abs(shooterTargetVelocity - shooterMotor.getVelocity()) < autoFeedRange
-                && !operatorGamepad.circle && !operatorGamepad.b && operatorGamepad.right_trigger > 0.0
-                && !packing(operatorGamepad);
+                && operatorGamepad.right_trigger > 0.0 && stopper.getPosition() == 1.0
+                && !shootingDisabledToggle && !operatorGamepad.left_bumper;
     }
     public void stopperPosition(String stopperPosition) {
         if (Objects.equals(stopperPosition, "open")) {
             stopper.setPosition(1.0);
         }
         else if (Objects.equals(stopperPosition, "closed")) {
-            stopper.setPosition(0.5);
+            stopper.setPosition(0.55);
         }
         else {
             return;

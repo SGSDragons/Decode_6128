@@ -15,8 +15,9 @@ public class Driver {
     public final DcMotor frontRightDrive;
     public final DcMotor backLeftDrive;
     public final DcMotor backRightDrive;
+    private static Gamepad driverGamepad;
 
-    public Driver(HardwareMap hardwareMap) {
+    public Driver(HardwareMap hardwareMap, Gamepad driveGamepad) {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
@@ -33,9 +34,11 @@ public class Driver {
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        driverGamepad = driveGamepad;
     }
 
-    public void Drive(Gamepad driverGamepad) {
+    public void Drive() {
 
         // Get input from the gamepad
         double forward = -driverGamepad.left_stick_y;  // Forward is negative Y
