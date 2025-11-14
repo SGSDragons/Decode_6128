@@ -15,9 +15,9 @@ public class Driver {
     public final DcMotor frontRightDrive;
     public final DcMotor backLeftDrive;
     public final DcMotor backRightDrive;
-    private static Gamepad driverGamepad;
+    public List<DcMotor> allMotors;
 
-    public Driver(HardwareMap hardwareMap, Gamepad driveGamepad) {
+    public Driver(HardwareMap hardwareMap) {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
@@ -35,15 +35,21 @@ public class Driver {
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        driverGamepad = driveGamepad;
+        allMotors = List.of(frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
     }
 
-    public void Drive() {
+    public void Drive(Gamepad gamepad) {
 
         // Get input from the gamepad
-        double forward = -driverGamepad.left_stick_y;  // Forward is negative Y
-        double strafe = /*driverGamepad.left_stick_x*/ 0.0;  //  Left/Right strafe  >>> TEMPORARILY DISABLED <<<
-        double turn = driverGamepad.right_stick_x;    // Turn left/right
+        double forward = -gamepad.left_stick_y;  // Forward is negative Y
+        double strafe = /*gamepad.left_stick_x*/ 0.0;  //  Left/Right strafe  >>> TEMPORARILY DISABLED <<<
+        double turn = gamepad.right_stick_x;    // Turn left/right
+
+        // Tell input to wheels
+        runWheels(forward, strafe, turn);
+    }
+
+    public void runWheels(double forward, double strafe, double turn) {
 
         // Calculate power for each wheel
         double frontLeftPower  = forward + strafe + turn;
@@ -68,6 +74,7 @@ public class Driver {
         backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
     }
+
     public static Object getDriveFromPort(int portNumber) {
         List<String> Motors = List.of("drive_a","drive_b","drive_c","drive_d");
 

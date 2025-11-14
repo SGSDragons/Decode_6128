@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -19,8 +18,8 @@ public class MainTeleOp extends LinearOpMode{
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        final Driver driver = new Driver(hardwareMap, gamepad1);
-        final Operator operator = new Operator(hardwareMap, gamepad1, gamepad2);
+        final Driver driver = new Driver(hardwareMap);
+        final Operator operator = new Operator(hardwareMap);
 
         // Wait for the game to start (driver presses START)
         waitForStart();
@@ -32,8 +31,8 @@ public class MainTeleOp extends LinearOpMode{
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            driver.Drive();
-            operator.Operate();
+            driver.Drive(gamepad1);
+            operator.Operate(gamepad2);
         }
     }
 }

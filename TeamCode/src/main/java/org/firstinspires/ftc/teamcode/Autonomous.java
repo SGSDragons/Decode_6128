@@ -4,7 +4,8 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.teamcode.systems.DriveTrain;
+
+import org.firstinspires.ftc.teamcode.systems.Driver;
 import org.firstinspires.ftc.teamcode.systems.Operator;
 
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="6128 DECODE Autonomous", group="OpMode")
@@ -20,13 +21,15 @@ public class Autonomous extends LinearOpMode{
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        final DriveTrain drive = new DriveTrain(hardwareMap);
+        final Driver drive = new Driver(hardwareMap);
         final Operator operator = new Operator(hardwareMap);
 
         // Wait for the game to start (driver presses START)
         waitForStart();
         telemetry.addData("Status", "Running");
         telemetry.update();
+
+        operator.runFlywheel();
 
         // Run backwards at full power for 1.5 seconds
 
@@ -47,7 +50,7 @@ public class Autonomous extends LinearOpMode{
         // Shoot 3 artifacts
         runtime.reset();
         while (opModeIsActive() && runtime.milliseconds() < 15000) {
-            operator.activateShooter();
+            operator.shoot();
         }
 
         // End

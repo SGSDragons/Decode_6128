@@ -54,7 +54,7 @@ public class MotorConfig extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        Driver drive = new Driver(hardwareMap, gamepad1);
+        Driver drive = new Driver(hardwareMap);
 
         // Wait for the game to start (driver presses START)
         waitForStart();

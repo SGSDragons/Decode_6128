@@ -4,8 +4,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.systems.Driver;
 import org.firstinspires.ftc.teamcode.systems.Operator;
+import org.firstinspires.ftc.teamcode.systems.Driver;
 
 @TeleOp(name="Singleplayer TeleOp", group="OpMode")
 public class SingleplayerTeleOp extends LinearOpMode {
@@ -18,8 +18,8 @@ public class SingleplayerTeleOp extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        final Driver drive = new Driver(hardwareMap, gamepad1);
-        final Operator operator = new Operator(hardwareMap, gamepad1, gamepad2);
+        final Driver drive = new Driver(hardwareMap);
+        final Operator operator = new Operator(hardwareMap);
 
         // Wait for the game to start (driver presses START)
         waitForStart();
@@ -31,8 +31,8 @@ public class SingleplayerTeleOp extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            drive.Drive();
-            operator.Operate();
+            drive.Drive(gamepad1);
+            operator.Operate(gamepad1);
         }
     }
 }

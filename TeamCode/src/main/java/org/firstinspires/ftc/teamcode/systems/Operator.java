@@ -1,129 +1,65 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 import java.util.Objects;
 
 @Config
 public class Operator {
 
-    public final DcMotorEx shooterMotor;
+    public final DcMotorEx flywheelMotor;
     public final DcMotorEx beltMotor;
-    public final DcMotorEx collectorMotor;
+    public final DcMotorEx intakeMotor;
     public final Servo stopper;
-    private static boolean shootingDisabledToggle;
-    private static double shooterTargetVelocity;
-    private static double autoFeedRange;
-    private static Gamepad operatorGamepad, driverGamepad;
+    public static double shooterTargetVelocity = 1400;
+    public static double autoFeedRange = 100;
 
     // Default
-    public Operator(HardwareMap hardwareMap, Gamepad driveGamepad, Gamepad operateGamepad) {
-        // Set motors and Servos
-        shooterMotor = hardwareMap.get(DcMotorEx.class, "shoot");
-        beltMotor = hardwareMap.get(DcMotorEx.class, "belt");
-        collectorMotor = hardwareMap.get(DcMotorEx.class, "collect");
-        stopper = hardwareMap.get(Servo.class, "stopper");
-
-        beltMotor.setDirection(Direction.REVERSE);
-
-        // Set important constants & variables
-        shooterTargetVelocity = 1400;
-        autoFeedRange = 100;
-        shootingDisabledToggle = true;
-
-        operatorGamepad = operateGamepad;
-        driverGamepad = driveGamepad;
-
-        stopperPosition("closed");
-    }
     public Operator(HardwareMap hardwareMap) {
         // Set motors and Servos
-        shooterMotor = hardwareMap.get(DcMotorEx.class, "shoot");
+        flywheelMotor = hardwareMap.get(DcMotorEx.class, "shoot");
         beltMotor = hardwareMap.get(DcMotorEx.class, "belt");
-        collectorMotor = hardwareMap.get(DcMotorEx.class, "collect");
+        intakeMotor = hardwareMap.get(DcMotorEx.class, "collect");
         stopper = hardwareMap.get(Servo.class, "stopper");
 
         beltMotor.setDirection(Direction.REVERSE);
 
-        // Set important constants & variables
-        shooterTargetVelocity = 1400;
-        autoFeedRange = 100;
-        shootingDisabledToggle = true;
-
         stopperPosition("closed");
     }
 
-    public void Operate() {
+    public void Operate(Gamepad gamepad) {
+        runFlywheel();
 
-        // Always run shooter as long as the toggle is on
-        if (!shootingDisabledToggle && !operatorGamepad.left_bumper) {
-            runShooter();
-        }
-        // Otherwise spin shooter wheel when the trigger is being held
-        else if (operatorGamepad.right_trigger > 0 && !operatorGamepad.left_bumper) {
-            runShooter();
-        } else if (!operatorGamepad.left_bumper) {
-            stop(shooterMotor);
+        if (gamepad.right_trigger > 0.0) {
+            intake();
+        } else if (gamepad.left_trigger > 0.0) {
+            shoot();
+        } else {
+            stopBC();
         }
 
-        // Run the belt & collector if the trigger is being held
-        if (operatorGamepad.left_trigger > 0 && !operatorGamepad.left_bumper) {
-            runIntake();
-        }
-        // Auto run the belt if it is at max speed
-        else if (canAutoFeed()) {
-            autoFeed();
-        }
-        else if (!operatorGamepad.left_bumper) {
-            stop(beltMotor, collectorMotor);
-        }
-
-        // Togglable constant shooting
-        if (operatorGamepad.bWasPressed()) {
-            shootingDisabledToggle = !shootingDisabledToggle;
-        }
-
-        // Empty Barrel Button
-        if (operatorGamepad.left_bumper) {
-            emptyBarrel();
-        }
+        TelemetryPacket p = new TelemetryPacket();
+        p.put("Flywheel Speed", flywheelMotor.getVelocity());
+        p.put("Target Speed", shooterTargetVelocity);
+        p.put("Belt Speed", beltMotor.getVelocity());
+        p.put("Intake Speed", intakeMotor.getVelocity());
+        p.put("Flywheel Current", flywheelMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        FtcDashboard.getInstance().sendTelemetryPacket(p);
     }
 
-    public void emptyBarrel() {
-        beltMotor.setPower(-1.0);
-        collectorMotor.setPower(-1.0);
-        shooterMotor.setPower(-1.0);
-    }
-    public void activateShooter() {
-        shootingDisabledToggle = true;
-    }
-    private void runShooter() {
-        shooterMotor.setVelocity(shooterTargetVelocity);
-        if (!(operatorGamepad == null)) {
-            if (!(operatorGamepad.left_trigger > 0.0)) {
-                stopperPosition("open");
-            }
-        }
-    }
-    public void runIntake() {
-        beltMotor.setPower(1.0);
-        collectorMotor.setPower(0.8);
-        stopperPosition("closed");
-    }
-    public void autoFeed() {
-        beltMotor.setPower(1.0);
-        collectorMotor.setPower(0.6);
-    }
     public boolean canAutoFeed() {
-        return Math.abs(shooterTargetVelocity - shooterMotor.getVelocity()) < autoFeedRange
-                && operatorGamepad.right_trigger > 0.0 && stopper.getPosition() == 1.0
-                && !shootingDisabledToggle && !operatorGamepad.left_bumper;
+        return Math.abs(shooterTargetVelocity - flywheelMotor.getVelocity()) < autoFeedRange;
     }
+
     public void stopperPosition(String stopperPosition) {
         if (Objects.equals(stopperPosition, "open")) {
             stopper.setPosition(1.0);
@@ -135,9 +71,25 @@ public class Operator {
             return;
         }
     }
-    public void stop(DcMotorEx... motors) {
-        for (DcMotorEx motor : motors) {
-            motor.setPower(0.0);
-        }
+
+    public void intake() {
+        stopperPosition("open");
+        intakeMotor.setPower(0.0);
+        beltMotor.setPower(canAutoFeed() ? 1.0 : 0.0);
+    }
+
+    public void shoot() {
+        stopperPosition("closed");
+        intakeMotor.setPower(1.0);
+        beltMotor.setPower(1.0);
+    }
+
+    public void stopBC() {
+        intakeMotor.setPower(0.0);
+        beltMotor.setPower(0.0);
+    }
+
+    public void runFlywheel() {
+        flywheelMotor.setVelocity(shooterTargetVelocity);
     }
 }

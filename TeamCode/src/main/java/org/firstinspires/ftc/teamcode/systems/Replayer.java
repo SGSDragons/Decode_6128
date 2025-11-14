@@ -55,8 +55,8 @@ public class Replayer {
         for (byte[] gamepadState : gamepadStates) {
             gamepad1.fromByteArray(gamepadState);
 
-            replayedDriver.Drive();
-            replayedOperator.Operate();
+            replayedDriver.Drive(gamepad1);
+            replayedOperator.Operate(gamepad1);
 
             OpMode.sleep(100); // rough timing match
         }

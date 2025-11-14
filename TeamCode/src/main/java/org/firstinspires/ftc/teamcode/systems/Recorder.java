@@ -42,8 +42,8 @@ public class Recorder extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        final Driver driver = new Driver(hardwareMap, gamepad1);
-        final Operator operator = new Operator(hardwareMap, gamepad1, gamepad1);
+        final Driver driver = new Driver(hardwareMap);
+        final Operator operator = new Operator(hardwareMap);
 
         // Wait for the game to start
         waitForStart();
@@ -80,8 +80,8 @@ public class Recorder extends LinearOpMode {
             }
 
             // Update robot behavior while recording
-            driver.Drive();
-            operator.Operate();
+            driver.Drive(gamepad1);
+            operator.Operate(gamepad1);
 
             sleep(100); // FTC-safe delay
         }
