@@ -13,8 +13,8 @@ import org.firstinspires.ftc.teamcode.systems.Operator;
 public class Autonomous extends LinearOpMode{
 
     private ElapsedTime runtime = new ElapsedTime();
-    public static boolean doBackup = true;
-    public static boolean doShoot = true;
+
+    public static int backupTime = 700;
 
     @Override
     public void runOpMode() {
@@ -32,30 +32,31 @@ public class Autonomous extends LinearOpMode{
         operator.runFlywheel();
 
         // Run backwards at full power for 1.5 seconds
-
         runtime.reset();
-
-        for (DcMotor wheelMotor : drive.allMotors) {
-            wheelMotor.setTargetPosition(wheelMotor.getCurrentPosition() - 140);
-            drive.frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            wheelMotor.setPower(-0.4);
+        for (DcMotor motor : drive.allMotors) {
+            motor.setPower(-0.4);
         }
-        while (opModeIsActive() && drive.frontLeftDrive.isBusy() && runtime.milliseconds() < 1500) {}
+
+        while (opModeIsActive() && runtime.milliseconds() < backupTime) continue;
 
         for (DcMotor motor : drive.allMotors) {
-            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motor.setPower(0.0);
         }
+
+        // Wait for half a second
+        runtime.reset();
+        while (opModeIsActive() && runtime.milliseconds() < 500) continue;
 
         // Shoot 3 artifacts
         runtime.reset();
         while (opModeIsActive() && runtime.milliseconds() < 15000) {
             operator.shoot();
         }
+        operator.stopBC();
 
         // End
         telemetry.addData("Status", "Stalling");
         telemetry.update();
-        while (opModeIsActive()) {}
+        while (opModeIsActive()) continue;
     }
 }

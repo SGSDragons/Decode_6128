@@ -20,7 +20,7 @@ public class Operator {
     public final DcMotorEx beltMotor;
     public final DcMotorEx intakeMotor;
     public final Servo stopper;
-    public static double shooterTargetVelocity = 1400;
+    public static double shooterTargetVelocity = 1450;
     public static double autoFeedRange = 100;
 
     // Default
@@ -37,12 +37,13 @@ public class Operator {
     }
 
     public void Operate(Gamepad gamepad) {
+
         runFlywheel();
 
         if (gamepad.right_trigger > 0.0) {
-            intake();
-        } else if (gamepad.left_trigger > 0.0) {
             shoot();
+        } else if (gamepad.left_trigger > 0.0) {
+            intake();
         } else {
             stopBC();
         }
@@ -62,10 +63,10 @@ public class Operator {
 
     public void stopperPosition(String stopperPosition) {
         if (Objects.equals(stopperPosition, "open")) {
-            stopper.setPosition(1.0);
+            stopper.setPosition(0.6);
         }
         else if (Objects.equals(stopperPosition, "closed")) {
-            stopper.setPosition(0.55);
+            stopper.setPosition(0.1);
         }
         else {
             return;
@@ -73,15 +74,15 @@ public class Operator {
     }
 
     public void intake() {
-        stopperPosition("open");
-        intakeMotor.setPower(0.0);
-        beltMotor.setPower(canAutoFeed() ? 1.0 : 0.0);
-    }
-
-    public void shoot() {
         stopperPosition("closed");
         intakeMotor.setPower(1.0);
         beltMotor.setPower(1.0);
+    }
+
+    public void shoot() {
+        stopperPosition("open");
+        intakeMotor.setPower(0.3);
+        beltMotor.setPower(canAutoFeed() ? 1.0 : 0.0);
     }
 
     public void stopBC() {

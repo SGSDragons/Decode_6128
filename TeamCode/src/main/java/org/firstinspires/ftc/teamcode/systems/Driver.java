@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import java.util.List;
 
-@Config
 public class Driver {
     public final DcMotor frontLeftDrive;
     public final DcMotor frontRightDrive;
@@ -42,20 +41,19 @@ public class Driver {
 
         // Get input from the gamepad
         double forward = -gamepad.left_stick_y;  // Forward is negative Y
-        double strafe = /*gamepad.left_stick_x*/ 0.0;  //  Left/Right strafe  >>> TEMPORARILY DISABLED <<<
         double turn = gamepad.right_stick_x;    // Turn left/right
 
         // Tell input to wheels
-        runWheels(forward, strafe, turn);
+        runWheels(forward, turn);
     }
 
-    public void runWheels(double forward, double strafe, double turn) {
+    public void runWheels(double forward, double turn) {
 
         // Calculate power for each wheel
-        double frontLeftPower  = forward + strafe + turn;
-        double frontRightPower = forward - strafe - turn;
-        double backLeftPower   = forward - strafe + turn;
-        double backRightPower  = forward + strafe - turn;
+        double frontLeftPower  = forward + turn;
+        double frontRightPower = forward - turn;
+        double backLeftPower   = forward + turn;
+        double backRightPower  = forward - turn;
 
         // Normalize the values if any motor power exceeds the range [-1.0, 1.0]
         double max = Math.max(Math.abs(frontLeftPower), Math.max(Math.abs(backLeftPower),
