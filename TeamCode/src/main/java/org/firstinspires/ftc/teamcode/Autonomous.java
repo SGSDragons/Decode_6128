@@ -50,7 +50,7 @@ public class Autonomous extends LinearOpMode{
         // Shoot 3 artifacts
         runtime.reset();
         while (opModeIsActive() && runtime.milliseconds() < 15000) {
-            operator.shoot();
+            operator.shoot(false);
         }
         operator.stopBC();
 

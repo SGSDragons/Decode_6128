@@ -41,7 +41,10 @@ public class Operator {
         runFlywheel();
 
         if (gamepad.right_trigger > 0.0) {
-            shoot();
+            shoot(false);
+        } else if (gamepad.right_bumper) {
+            // Right bumper runs shoot() without stop for emergencies
+            shoot(true);
         } else if (gamepad.left_trigger > 0.0) {
             intake();
         } else {
@@ -79,10 +82,18 @@ public class Operator {
         beltMotor.setPower(1.0);
     }
 
-    public void shoot() {
-        stopperPosition("open");
-        intakeMotor.setPower(0.3);
-        beltMotor.setPower(canAutoFeed() ? 1.0 : 0.0);
+    public void shoot(boolean override) {
+        if (!override) {
+            // Default behavior, only feed if flywheel is at correct speed
+            stopperPosition("open");
+            intakeMotor.setPower(0.3);
+            beltMotor.setPower(canAutoFeed() ? 1.0 : 0.0);
+        } else {
+            // Override behavior for when there is a problem with flywheel speed
+            stopperPosition("open");
+            intakeMotor.setPower(0.3);
+            beltMotor.setPower(1.0);
+        }
     }
 
     public void stopBC() {
