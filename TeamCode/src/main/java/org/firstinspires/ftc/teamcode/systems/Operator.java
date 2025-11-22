@@ -22,6 +22,8 @@ public class Operator {
     public final Servo stopper;
     public static double shooterTargetVelocity = 1450;
     public static double autoFeedRange = 100;
+    public static double openGatePos = 0.5;
+    public static double closedGatePos = 0.0;
 
     // Default
     public Operator(HardwareMap hardwareMap) {
@@ -47,6 +49,9 @@ public class Operator {
             shoot(true);
         } else if (gamepad.left_trigger > 0.0) {
             intake();
+        } else if (gamepad.left_bumper) {
+            // If the artifacts get stuck, the operator can force them out
+            eject();
         } else {
             stopBC();
         }
@@ -66,10 +71,10 @@ public class Operator {
 
     public void stopperPosition(String stopperPosition) {
         if (Objects.equals(stopperPosition, "open")) {
-            stopper.setPosition(0.6);
+            stopper.setPosition(openGatePos);
         }
         else if (Objects.equals(stopperPosition, "closed")) {
-            stopper.setPosition(0.1);
+            stopper.setPosition(closedGatePos);
         }
         else {
             return;
@@ -80,6 +85,12 @@ public class Operator {
         stopperPosition("closed");
         intakeMotor.setPower(1.0);
         beltMotor.setPower(1.0);
+    }
+
+    public void eject() {
+        stopperPosition("closed");
+        intakeMotor.setPower(-1.0);
+        beltMotor.setPower(-1.0);
     }
 
     public void shoot(boolean override) {
