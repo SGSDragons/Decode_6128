@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
@@ -19,28 +20,77 @@ public class Operator {
     public final DcMotorEx flywheelMotor;
     public final DcMotorEx beltMotor;
     public final DcMotorEx intakeMotor;
-    public final Servo stopper;
-    public static double shooterTargetVelocity = 1450;
+    public final Servo gate;
+    public static double shooterTargetVelocity;
+    public static double savedShooterTargetVelocity = 1450;
     public static double autoFeedRange = 100;
     public static double openGatePos = 0.5;
     public static double closedGatePos = 0.0;
 
     // Default
+    public Operator(HardwareMap hardwareMap, String startGatePos) {
+        // Set motors and Servos
+        flywheelMotor = hardwareMap.get(DcMotorEx.class, "shoot");
+        beltMotor = hardwareMap.get(DcMotorEx.class, "belt");
+        intakeMotor = hardwareMap.get(DcMotorEx.class, "collect");
+        gate = hardwareMap.get(Servo.class, "stopper");
+
+        beltMotor.setDirection(Direction.REVERSE);
+
+        if (Objects.equals(startGatePos, "open") || Objects.equals(startGatePos, "closed")) {
+            setGatePosition(startGatePos);
+        }
+
+        shooterTargetVelocity = savedShooterTargetVelocity;
+    }
     public Operator(HardwareMap hardwareMap) {
         // Set motors and Servos
         flywheelMotor = hardwareMap.get(DcMotorEx.class, "shoot");
         beltMotor = hardwareMap.get(DcMotorEx.class, "belt");
         intakeMotor = hardwareMap.get(DcMotorEx.class, "collect");
-        stopper = hardwareMap.get(Servo.class, "stopper");
+        gate = hardwareMap.get(Servo.class, "stopper");
 
         beltMotor.setDirection(Direction.REVERSE);
 
-        stopperPosition("closed");
+        setGatePosition("closed");
+
+        shooterTargetVelocity = savedShooterTargetVelocity;
     }
+
+    int overloadTicks = 0;
+    boolean reversing = false;
+    ElapsedTime deltaTime = new ElapsedTime();
 
     public void Operate(Gamepad gamepad) {
 
         runFlywheel();
+
+        // If it's not already running in reverse and the motor is drawing too much
+        // power, stop it, set it to run in reverse and backup at 50% power
+        // Ignore all other operations from the controller until things are back to normal
+        if (flywheelMotor.getCurrent(CurrentUnit.MILLIAMPS) > 7000) {
+            overloadTicks++;
+        } else {
+            overloadTicks = 0;
+        }
+        if (!reversing && overloadTicks > 100) {
+            flywheelMotor.setPower(0.0);
+            flywheelMotor.setVelocity(0.0);
+            beltMotor.setPower(-0.5);
+            reversing = true;
+            deltaTime.reset();
+
+            return;
+        }
+
+        // If it's already reversing, check if the controller can go back to normal
+        if (reversing) {
+            // Keep waiting until it's close enough
+            if (deltaTime.milliseconds() < 1000) {
+                return;
+            }
+            reversing = false;
+        }
 
         if (gamepad.right_trigger > 0.0) {
             shoot(false);
@@ -69,26 +119,36 @@ public class Operator {
         return Math.abs(shooterTargetVelocity - flywheelMotor.getVelocity()) < autoFeedRange;
     }
 
-    public void stopperPosition(String stopperPosition) {
-        if (Objects.equals(stopperPosition, "open")) {
-            stopper.setPosition(openGatePos);
+    public void setGatePosition(String gatePosition) {
+        if (Objects.equals(gatePosition, "open")) {
+            gate.setPosition(openGatePos);
         }
-        else if (Objects.equals(stopperPosition, "closed")) {
-            stopper.setPosition(closedGatePos);
+        else if (Objects.equals(gatePosition, "closed")) {
+            gate.setPosition(closedGatePos);
         }
         else {
             return;
         }
     }
 
+    public String getGatePosition() {
+        if (gate.getPosition() == openGatePos) {
+            return "open";
+        } else if (gate.getPosition() == closedGatePos) {
+            return "closed";
+        } else {
+            return "neither";
+        }
+    }
+
     public void intake() {
-        stopperPosition("closed");
+        setGatePosition("closed");
         intakeMotor.setPower(1.0);
         beltMotor.setPower(1.0);
     }
 
     public void eject() {
-        stopperPosition("closed");
+        setGatePosition("closed");
         intakeMotor.setPower(-1.0);
         beltMotor.setPower(-1.0);
     }
@@ -96,12 +156,12 @@ public class Operator {
     public void shoot(boolean override) {
         if (!override) {
             // Default behavior, only feed if flywheel is at correct speed
-            stopperPosition("open");
+            setGatePosition("open");
             intakeMotor.setPower(0.3);
             beltMotor.setPower(canAutoFeed() ? 1.0 : 0.0);
         } else {
             // Override behavior for when there is a problem with flywheel speed
-            stopperPosition("open");
+            setGatePosition("open");
             intakeMotor.setPower(0.3);
             beltMotor.setPower(1.0);
         }
@@ -113,6 +173,13 @@ public class Operator {
     }
 
     public void runFlywheel() {
+        if (shooterTargetVelocity == 0.0) {
+            shooterTargetVelocity = savedShooterTargetVelocity;
+        }
         flywheelMotor.setVelocity(shooterTargetVelocity);
+    }
+
+    public void stopFlywheel() {
+        shooterTargetVelocity = 0.0;
     }
 }

@@ -14,7 +14,7 @@ public class Autonomous extends LinearOpMode{
 
     private ElapsedTime runtime = new ElapsedTime();
 
-    public static int backupTime = 700;
+    public static int backupTime = 1000;
 
     @Override
     public void runOpMode() {
@@ -22,7 +22,7 @@ public class Autonomous extends LinearOpMode{
         telemetry.update();
 
         final Driver drive = new Driver(hardwareMap);
-        final Operator operator = new Operator(hardwareMap);
+        final Operator operator = new Operator(hardwareMap, "open");
 
         // Wait for the game to start (driver presses START)
         waitForStart();
@@ -53,6 +53,7 @@ public class Autonomous extends LinearOpMode{
             operator.shoot(false);
         }
         operator.stopBC();
+        operator.stopFlywheel();
 
         // End
         telemetry.addData("Status", "Stalling");
