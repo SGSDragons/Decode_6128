@@ -53,7 +53,7 @@ public class Autonomous extends LinearOpMode{
             operator.shoot(false);
         }
         operator.stopBC();
-        operator.stopFlywheel();
+        operator.flywheelMotor.setPower(0.0);
 
         // End
         telemetry.addData("Status", "Stalling");

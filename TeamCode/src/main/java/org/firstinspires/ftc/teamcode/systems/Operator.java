@@ -3,10 +3,12 @@ package org.firstinspires.ftc.teamcode.systems;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -21,13 +23,20 @@ public class Operator {
     public final DcMotorEx beltMotor;
     public final DcMotorEx intakeMotor;
     public final Servo gate;
-    public static double shooterTargetVelocity;
-    public static double savedShooterTargetVelocity = 1450;
+    public static double shooterTargetVelocity = 1450;
     public static double autoFeedRange = 100;
     public static double openGatePos = 0.5;
     public static double closedGatePos = 0.0;
+    public static double flywheelAmpLimit = 7.0;
 
-    // Default
+    public static double FW_P = 8;
+    public static double FW_I = 0.4;
+    public static double FW_D = 0.0;
+    public static double FW_F = 6.0;
+
+    // Deltatime
+    ElapsedTime deltaTime = new ElapsedTime();
+
     public Operator(HardwareMap hardwareMap, String startGatePos) {
         // Set motors and Servos
         flywheelMotor = hardwareMap.get(DcMotorEx.class, "shoot");
@@ -41,56 +50,21 @@ public class Operator {
             setGatePosition(startGatePos);
         }
 
-        shooterTargetVelocity = savedShooterTargetVelocity;
+        retune();
     }
+
     public Operator(HardwareMap hardwareMap) {
-        // Set motors and Servos
-        flywheelMotor = hardwareMap.get(DcMotorEx.class, "shoot");
-        beltMotor = hardwareMap.get(DcMotorEx.class, "belt");
-        intakeMotor = hardwareMap.get(DcMotorEx.class, "collect");
-        gate = hardwareMap.get(Servo.class, "stopper");
-
-        beltMotor.setDirection(Direction.REVERSE);
-
-        setGatePosition("closed");
-
-        shooterTargetVelocity = savedShooterTargetVelocity;
+        this(hardwareMap, "closed");
     }
 
-    int overloadTicks = 0;
-    boolean reversing = false;
-    ElapsedTime deltaTime = new ElapsedTime();
+    public void retune() {
+        PIDFCoefficients pid = new PIDFCoefficients(FW_P, FW_I, FW_D, FW_F);
+        flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pid);
+    }
 
     public void Operate(Gamepad gamepad) {
 
         runFlywheel();
-
-        // If it's not already running in reverse and the motor is drawing too much
-        // power, stop it, set it to run in reverse and backup at 50% power
-        // Ignore all other operations from the controller until things are back to normal
-        if (flywheelMotor.getCurrent(CurrentUnit.MILLIAMPS) > 7000) {
-            overloadTicks++;
-        } else {
-            overloadTicks = 0;
-        }
-        if (!reversing && overloadTicks > 100) {
-            flywheelMotor.setPower(0.0);
-            flywheelMotor.setVelocity(0.0);
-            beltMotor.setPower(-0.5);
-            reversing = true;
-            deltaTime.reset();
-
-            return;
-        }
-
-        // If it's already reversing, check if the controller can go back to normal
-        if (reversing) {
-            // Keep waiting until it's close enough
-            if (deltaTime.milliseconds() < 1000) {
-                return;
-            }
-            reversing = false;
-        }
 
         if (gamepad.right_trigger > 0.0) {
             shoot(false);
@@ -99,13 +73,14 @@ public class Operator {
             shoot(true);
         } else if (gamepad.left_trigger > 0.0) {
             intake();
-        } else if (gamepad.left_bumper) {
-            // If the artifacts get stuck, the operator can force them out
-            eject();
         } else {
             stopBC();
         }
 
+        updateTelemetry();
+    }
+
+    public void updateTelemetry() {
         TelemetryPacket p = new TelemetryPacket();
         p.put("Flywheel Speed", flywheelMotor.getVelocity());
         p.put("Target Speed", shooterTargetVelocity);
@@ -131,40 +106,26 @@ public class Operator {
         }
     }
 
-    public String getGatePosition() {
-        if (gate.getPosition() == openGatePos) {
-            return "open";
-        } else if (gate.getPosition() == closedGatePos) {
-            return "closed";
-        } else {
-            return "neither";
-        }
-    }
-
     public void intake() {
         setGatePosition("closed");
         intakeMotor.setPower(1.0);
-        beltMotor.setPower(1.0);
-    }
-
-    public void eject() {
-        setGatePosition("closed");
-        intakeMotor.setPower(-1.0);
-        beltMotor.setPower(-1.0);
-    }
-
-    public void shoot(boolean override) {
-        if (!override) {
-            // Default behavior, only feed if flywheel is at correct speed
-            setGatePosition("open");
-            intakeMotor.setPower(0.3);
-            beltMotor.setPower(canAutoFeed() ? 1.0 : 0.0);
-        } else {
-            // Override behavior for when there is a problem with flywheel speed
-            setGatePosition("open");
-            intakeMotor.setPower(0.3);
+        if (!isJammed()) {
             beltMotor.setPower(1.0);
         }
+    }
+
+    public void shoot(boolean overrideAutoFeed) {
+            if (!overrideAutoFeed) {
+                // Default behavior, only feed if flywheel is at correct speed
+                setGatePosition("open");
+                intakeMotor.setPower(0.3);
+                beltMotor.setPower(canAutoFeed() ? 1.0 : 0.0);
+            } else {
+                // Override behavior for when there is a problem with flywheel speed
+                setGatePosition("open");
+                intakeMotor.setPower(0.3);
+                beltMotor.setPower(1.0);
+            }
     }
 
     public void stopBC() {
@@ -172,14 +133,22 @@ public class Operator {
         beltMotor.setPower(0.0);
     }
 
-    public void runFlywheel() {
-        if (shooterTargetVelocity == 0.0) {
-            shooterTargetVelocity = savedShooterTargetVelocity;
-        }
-        flywheelMotor.setVelocity(shooterTargetVelocity);
+    ElapsedTime jamBlocker = new ElapsedTime();
+    boolean isJammed() {
+        return jamBlocker.milliseconds() < 500;
     }
+    public void runFlywheel() {
+        if (flywheelMotor.getCurrent(CurrentUnit.AMPS) > flywheelAmpLimit) {
+            jamBlocker.reset();
+        }
 
-    public void stopFlywheel() {
-        shooterTargetVelocity = 0.0;
+        if (isJammed()) {
+            // If current is too high (stalling/jammed), stop the motor
+            flywheelMotor.setPower(0.0);
+            setGatePosition("closed");
+            beltMotor.setPower(-1.0);
+        } else {
+            flywheelMotor.setVelocity(shooterTargetVelocity);
+        }
     }
 }
