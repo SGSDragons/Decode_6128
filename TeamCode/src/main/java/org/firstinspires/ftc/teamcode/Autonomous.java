@@ -22,7 +22,7 @@ public class Autonomous extends LinearOpMode{
         telemetry.update();
 
         final Driver drive = new Driver(hardwareMap);
-        final Operator operator = new Operator(hardwareMap, "open");
+        final Operator operator = new Operator(drive.allDrives, hardwareMap, "open");
 
         // Wait for the game to start (driver presses START)
         waitForStart();
@@ -33,13 +33,13 @@ public class Autonomous extends LinearOpMode{
 
         // Run backwards at full power for 1.5 seconds
         runtime.reset();
-        for (DcMotor motor : drive.allMotors) {
+        for (DcMotor motor : drive.allDrives) {
             motor.setPower(-0.4);
         }
 
         while (opModeIsActive() && runtime.milliseconds() < backupTime) continue;
 
-        for (DcMotor motor : drive.allMotors) {
+        for (DcMotor motor : drive.allDrives) {
             motor.setPower(0.0);
         }
 

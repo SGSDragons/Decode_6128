@@ -45,7 +45,7 @@ public class Recorder extends LinearOpMode {
         telemetry.update();
 
         final Driver driver = new Driver(hardwareMap);
-        final Operator operator = new Operator(hardwareMap, "closed");
+        final Operator operator = new Operator(driver.allDrives, hardwareMap, "closed");
 
         // Wait for the game to start
         waitForStart();

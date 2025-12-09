@@ -19,7 +19,7 @@ public class MainTeleOp extends LinearOpMode{
         telemetry.update();
 
         final Driver driver = new Driver(hardwareMap);
-        final Operator operator = new Operator(hardwareMap);
+        final Operator operator = new Operator(driver.allDrives, hardwareMap);
 
         // Wait for the game to start (driver presses START)
         waitForStart();

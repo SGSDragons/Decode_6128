@@ -20,7 +20,7 @@ public class ReplayedTeleOpExample extends LinearOpMode {
         telemetry.update();
 
         final Driver driver = new Driver(hardwareMap);
-        final Operator operator = new Operator(hardwareMap);
+        final Operator operator = new Operator(driver.allDrives, hardwareMap);
         final Replayer replayer = new Replayer(gamepad1, driver, operator, this);
 
         // Wait for the game to start (driver presses START)

@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
+import java.util.List;
 import java.util.Objects;
 
 @Config
@@ -27,8 +28,12 @@ public class Operator {
     public static double autoFeedRange = 100;
     public static double openGatePos = 0.5;
     public static double closedGatePos = 0.0;
-    public static double flywheelAmpLimit = 7.0;
+    public static double MILLIAMP_LIMIT = 25000;
 
+    public List<DcMotorEx> allOperators;
+    public List<DcMotorEx> driveMotors;
+
+    // PID Values
     public static double FW_P = 8;
     public static double FW_I = 0.4;
     public static double FW_D = 0.0;
@@ -37,12 +42,15 @@ public class Operator {
     // Deltatime
     ElapsedTime deltaTime = new ElapsedTime();
 
-    public Operator(HardwareMap hardwareMap, String startGatePos) {
+    public Operator(List<DcMotorEx> driveMotors, HardwareMap hardwareMap, String startGatePos) {
         // Set motors and Servos
         flywheelMotor = hardwareMap.get(DcMotorEx.class, "shoot");
         beltMotor = hardwareMap.get(DcMotorEx.class, "belt");
         intakeMotor = hardwareMap.get(DcMotorEx.class, "collect");
         gate = hardwareMap.get(Servo.class, "stopper");
+
+        allOperators = List.of(flywheelMotor, beltMotor, intakeMotor);
+        this.driveMotors = driveMotors;
 
         beltMotor.setDirection(Direction.REVERSE);
 
@@ -53,8 +61,8 @@ public class Operator {
         retune();
     }
 
-    public Operator(HardwareMap hardwareMap) {
-        this(hardwareMap, "closed");
+    public Operator(List<DcMotorEx> driveMotors, HardwareMap hardwareMap) {
+        this(driveMotors, hardwareMap, "closed");
     }
 
     public void retune() {
@@ -82,11 +90,27 @@ public class Operator {
 
     public void updateTelemetry() {
         TelemetryPacket p = new TelemetryPacket();
-        p.put("Flywheel Speed", flywheelMotor.getVelocity());
-        p.put("Target Speed", shooterTargetVelocity);
-        p.put("Belt Speed", beltMotor.getVelocity());
-        p.put("Intake Speed", intakeMotor.getVelocity());
-        p.put("Flywheel Current", flywheelMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        p.put("1 Target Speed", shooterTargetVelocity);
+        p.put("1 Flywheel Speed", flywheelMotor.getVelocity());
+        p.put("1 Belt Speed", beltMotor.getVelocity());
+        p.put("1 Intake Speed", intakeMotor.getVelocity());
+
+        double wheelCurrent = 0.0;
+        p.put("20 Flywheel Current", flywheelMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        p.put("20 Intake Current", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        p.put("20 Belt Current", beltMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        for (DcMotorEx motor : driveMotors) {
+            wheelCurrent += motor.getCurrent(CurrentUnit.MILLIAMPS);
+        }
+        p.put("20 Wheel Current", wheelCurrent);
+
+        p.put("20 Total Current", totalMilliamps());
+
+        p.put("21 Front Left Drive Current", driveMotors.get(0).getCurrent(CurrentUnit.MILLIAMPS));
+        p.put("21 Front Right Drive Current", driveMotors.get(1).getCurrent(CurrentUnit.MILLIAMPS));
+        p.put("21 Back Left Drive Current", driveMotors.get(2).getCurrent(CurrentUnit.MILLIAMPS));
+        p.put("21 Back Right Drive Current", driveMotors.get(3).getCurrent(CurrentUnit.MILLIAMPS));
+
         FtcDashboard.getInstance().sendTelemetryPacket(p);
     }
 
@@ -137,8 +161,21 @@ public class Operator {
     boolean isJammed() {
         return jamBlocker.milliseconds() < 500;
     }
+
+    double totalMilliamps() {
+        double totalCurrent = 0.0;
+        for (DcMotorEx motor : allOperators) {
+            totalCurrent += motor.getCurrent(CurrentUnit.MILLIAMPS);
+        }
+        for (DcMotorEx motor : driveMotors) {
+            totalCurrent += motor.getCurrent(CurrentUnit.MILLIAMPS);
+        }
+        return totalCurrent;
+    }
+
     public void runFlywheel() {
-        if (flywheelMotor.getCurrent(CurrentUnit.AMPS) > flywheelAmpLimit) {
+
+        if (totalMilliamps() > MILLIAMP_LIMIT) {
             jamBlocker.reset();
         }
 

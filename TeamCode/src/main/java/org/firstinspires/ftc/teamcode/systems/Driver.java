@@ -1,29 +1,30 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import java.util.List;
 
+@Config
 public class Driver {
-    public final DcMotor frontLeftDrive;
-    public final DcMotor frontRightDrive;
-    public final DcMotor backLeftDrive;
-    public final DcMotor backRightDrive;
-    public List<DcMotor> allMotors;
+    public final DcMotorEx frontLeftDrive;
+    public final DcMotorEx frontRightDrive;
+    public final DcMotorEx backLeftDrive;
+    public final DcMotorEx backRightDrive;
+    public static double speedMultiplier = 0.8;
+    public List<DcMotorEx> allDrives;
 
     public Driver(HardwareMap hardwareMap) {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "drive_a");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "drive_b");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "drive_c");
-        backRightDrive = hardwareMap.get(DcMotor.class, "drive_d");
+        frontLeftDrive = hardwareMap.get(DcMotorEx.class, "drive_a");
+        frontRightDrive = hardwareMap.get(DcMotorEx.class, "drive_b");
+        backLeftDrive = hardwareMap.get(DcMotorEx.class, "drive_c");
+        backRightDrive = hardwareMap.get(DcMotorEx.class, "drive_d");
 
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
@@ -34,7 +35,7 @@ public class Driver {
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        allMotors = List.of(frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
+        allDrives = List.of(frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
     }
 
     public void Drive(Gamepad gamepad) {
@@ -42,18 +43,19 @@ public class Driver {
         // Get input from the gamepad
         double forward = -gamepad.left_stick_y;  // Forward is negative Y
         double turn = gamepad.right_stick_x;    // Turn left/right
+        double strafe = gamepad.left_stick_x;
 
         // Tell input to wheels
-        runWheels(forward, turn);
+        runWheels(forward, strafe, turn);
     }
 
-    public void runWheels(double forward, double turn) {
+    public void runWheels(double forward, double strafe, double turn) {
 
         // Calculate power for each wheel
-        double frontLeftPower  = forward + turn;
-        double frontRightPower = forward - turn;
-        double backLeftPower   = forward + turn;
-        double backRightPower  = forward - turn;
+        double frontLeftPower  = speedMultiplier * (forward + strafe + turn);
+        double frontRightPower = speedMultiplier * (forward - strafe - turn);
+        double backLeftPower   = speedMultiplier * (forward - strafe + turn);
+        double backRightPower  = speedMultiplier * (forward + strafe - turn);
 
         // Normalize the values if any motor power exceeds the range [-1.0, 1.0]
         double max = Math.max(Math.abs(frontLeftPower), Math.max(Math.abs(backLeftPower),
