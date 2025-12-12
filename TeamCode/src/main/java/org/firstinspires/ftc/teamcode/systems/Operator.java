@@ -25,7 +25,7 @@ public class Operator {
     public final DcMotorEx intakeMotor;
     public final Servo gate;
     public static double shooterTargetVelocity = 1450;
-    public static double autoFeedRange = 100;
+    public static double autoFeedRange = 30;
     public static double openGatePos = 0.5;
     public static double closedGatePos = 0.0;
     public static double MILLIAMP_LIMIT = 25000;
@@ -34,10 +34,10 @@ public class Operator {
     public List<DcMotorEx> driveMotors;
 
     // PID Values
-    public static double FW_P = 8;
-    public static double FW_I = 0.4;
+    public static double FW_P = 7;
+    public static double FW_I = 0.1;
     public static double FW_D = 0.0;
-    public static double FW_F = 6.0;
+    public static double FW_F = 15.0;
 
     // Deltatime
     ElapsedTime deltaTime = new ElapsedTime();
@@ -106,10 +106,12 @@ public class Operator {
 
         p.put("20 Total Current", totalMilliamps());
 
-        p.put("21 Front Left Drive Current", driveMotors.get(0).getCurrent(CurrentUnit.MILLIAMPS));
-        p.put("21 Front Right Drive Current", driveMotors.get(1).getCurrent(CurrentUnit.MILLIAMPS));
-        p.put("21 Back Left Drive Current", driveMotors.get(2).getCurrent(CurrentUnit.MILLIAMPS));
-        p.put("21 Back Right Drive Current", driveMotors.get(3).getCurrent(CurrentUnit.MILLIAMPS));
+        if (driveMotors.size() == 4) {
+            p.put("21 Front Left Drive Current", driveMotors.get(0).getCurrent(CurrentUnit.MILLIAMPS));
+            p.put("21 Front Right Drive Current", driveMotors.get(1).getCurrent(CurrentUnit.MILLIAMPS));
+            p.put("21 Back Left Drive Current", driveMotors.get(2).getCurrent(CurrentUnit.MILLIAMPS));
+            p.put("21 Back Right Drive Current", driveMotors.get(3).getCurrent(CurrentUnit.MILLIAMPS));
+        }
 
         FtcDashboard.getInstance().sendTelemetryPacket(p);
     }
@@ -142,8 +144,13 @@ public class Operator {
             if (!overrideAutoFeed) {
                 // Default behavior, only feed if flywheel is at correct speed
                 setGatePosition("open");
-                intakeMotor.setPower(0.3);
-                beltMotor.setPower(canAutoFeed() ? 1.0 : 0.0);
+                if (canAutoFeed()) {
+                    intakeMotor.setPower(0.3);
+                    beltMotor.setPower(1.0);
+                } else {
+                    intakeMotor.setPower(0.0);
+                    beltMotor.setPower(0.0);
+                }
             } else {
                 // Override behavior for when there is a problem with flywheel speed
                 setGatePosition("open");
