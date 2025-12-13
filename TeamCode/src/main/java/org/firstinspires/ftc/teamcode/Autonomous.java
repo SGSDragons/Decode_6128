@@ -24,6 +24,8 @@ public class Autonomous extends LinearOpMode{
         final Driver drive = new Driver(hardwareMap);
         final Operator operator = new Operator(drive.allDrives, hardwareMap, "open");
 
+        operator.setMode(Operator.OpMode.AUTO);
+
         // Wait for the game to start (driver presses START)
         waitForStart();
         telemetry.addData("Status", "Running");

@@ -24,7 +24,7 @@ public class FlywheelTuner extends LinearOpMode {
             }
 
             if (gamepad1.b) {
-                op.retune();
+                //op.retune();
                 enabled = true;
             }
 

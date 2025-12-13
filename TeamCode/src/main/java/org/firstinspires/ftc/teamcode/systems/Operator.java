@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import android.graphics.Path;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -25,17 +27,17 @@ public class Operator {
     public final DcMotorEx intakeMotor;
     public final Servo gate;
     public static double shooterTargetVelocity = 1450;
-    public static double autoFeedRange = 30;
-    public static double openGatePos = 0.5;
-    public static double closedGatePos = 0.0;
-    public static double MILLIAMP_LIMIT = 25000;
+    public static double autoFeedRange;
+    public double openGatePos = 0.5;
+    public double closedGatePos = 0.0;
+    public double MILLIAMP_LIMIT = 25000;
 
     public List<DcMotorEx> allOperators;
     public List<DcMotorEx> driveMotors;
 
     // PID Values
     public static double FW_P = 7;
-    public static double FW_I = 0.1;
+    public static double FW_I;
     public static double FW_D = 0.0;
     public static double FW_F = 15.0;
 
@@ -57,15 +59,25 @@ public class Operator {
         if (Objects.equals(startGatePos, "open") || Objects.equals(startGatePos, "closed")) {
             setGatePosition(startGatePos);
         }
-
-        retune();
     }
 
     public Operator(List<DcMotorEx> driveMotors, HardwareMap hardwareMap) {
         this(driveMotors, hardwareMap, "closed");
     }
 
-    public void retune() {
+    public enum OpMode {
+        AUTO,
+        TELEOP
+    }
+    public void setMode(OpMode mode) {
+        if (mode == OpMode.AUTO) {
+            FW_I = 0.1;
+            autoFeedRange = 30;
+        } else {
+            FW_I = 0.15;
+            autoFeedRange = 75;
+        }
+
         PIDFCoefficients pid = new PIDFCoefficients(FW_P, FW_I, FW_D, FW_F);
         flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pid);
     }
@@ -90,10 +102,12 @@ public class Operator {
 
     public void updateTelemetry() {
         TelemetryPacket p = new TelemetryPacket();
-        p.put("1 Target Speed", shooterTargetVelocity);
-        p.put("1 Flywheel Speed", flywheelMotor.getVelocity());
-        p.put("1 Belt Speed", beltMotor.getVelocity());
-        p.put("1 Intake Speed", intakeMotor.getVelocity());
+        p.put("10 Target Speed", shooterTargetVelocity);
+        p.put("10 Flywheel Speed", flywheelMotor.getVelocity());
+        p.put("10 Min Flywheel Range", shooterTargetVelocity - autoFeedRange);
+        p.put("10 Max Flywheel Range", shooterTargetVelocity + autoFeedRange);
+        p.put("11 Belt Speed", beltMotor.getVelocity());
+        p.put("11 Intake Speed", intakeMotor.getVelocity());
 
         double wheelCurrent = 0.0;
         p.put("20 Flywheel Current", flywheelMotor.getCurrent(CurrentUnit.MILLIAMPS));
